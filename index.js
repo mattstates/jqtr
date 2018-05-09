@@ -5,8 +5,8 @@ import Error from './components/Error.jsx';
 import './node_modules/react-table/react-table.css';
 import './styles/styles.scss';
 /* MOCK API RESPONSE DATA */
-// import sampleData from './ignore/sampleData1.js';
-// import sampleData2 from './ignore/sampleData2.js';
+import sampleData from './ignore/sampleData1.js';
+import sampleData2 from './ignore/sampleData2.js';
 
 import {
     mapToUsefulData,
@@ -47,53 +47,53 @@ class App extends React.Component {
         });
 
         /* MOCK API CALL */
-        // searchQuery.length % 2 == 0 ? (searchQuery = sampleData) : (searchQuery = sampleData2);
-        // setTimeout(() => {
-        //     let data = mapSubtasksAndResourcesToParentTask(
-        //         searchQuery.issues.map(mapToUsefulData),
-        //         this.setState.bind(this)
-        //     );
-        //     this.setState({
-        //         issues: data,
-        //         loading: false
-        //     });
-        // }, 1500);
-
-        fetch(
-            `${jiraApiUrl}${window.encodeURIComponent(
-                'jql=' + window.encodeURIComponent(searchQuery) + '&maxResults=1000'
-            )}`,
-            {
-                method: 'GET',
-                credentials: 'same-origin'
-            }
-        )
-            .then(response => {
-                return response.json();
-            })
-            .then(jiraData => {
-
-                window.location.hash = `jql=${window.encodeURIComponent(searchQuery)}`;
-                this.setState({
-                    issues: mapSubtasksAndResourcesToParentTask(
-                        jiraData.issues.map(mapToUsefulData),
-                        this.setState.bind(this)
-                    ),
-                    loading: false
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    loading: false,
-                    hasError: true,
-                    notification: {
-                        message:
-                            'There was a problem getting a response. Please check your JQL query and/or try again.',
-                        items: []
-                    }
-                });
+        searchQuery.length % 2 == 0 ? (searchQuery = sampleData) : (searchQuery = sampleData2);
+        setTimeout(() => {
+            let data = mapSubtasksAndResourcesToParentTask(
+                searchQuery.issues.map(mapToUsefulData),
+                this.setState.bind(this)
+            );
+            this.setState({
+                issues: data,
+                loading: false
             });
+        }, 1500);
+
+        // fetch(
+        //     `${jiraApiUrl}${window.encodeURIComponent(
+        //         'jql=' + window.encodeURIComponent(searchQuery) + '&maxResults=1000'
+        //     )}`,
+        //     {
+        //         method: 'GET',
+        //         credentials: 'same-origin'
+        //     }
+        // )
+        //     .then(response => {
+        //         return response.json();
+        //     })
+        //     .then(jiraData => {
+
+        //         window.location.hash = `jql=${window.encodeURIComponent(searchQuery)}`;
+        //         this.setState({
+        //             issues: mapSubtasksAndResourcesToParentTask(
+        //                 jiraData.issues.map(mapToUsefulData),
+        //                 this.setState.bind(this)
+        //             ),
+        //             loading: false
+        //         });
+        //     })
+        //     .catch(err => {
+        //         console.error(err);
+        //         this.setState({
+        //             loading: false,
+        //             hasError: true,
+        //             notification: {
+        //                 message:
+        //                     'There was a problem getting a response. Please check your JQL query and/or try again.',
+        //                 items: []
+        //             }
+        //         });
+        //     });
     }
 
     changeHandler(e) {

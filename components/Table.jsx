@@ -58,7 +58,7 @@ class Table extends React.Component {
                         </React.Fragment>
                     ),
                     id: 'taskTitle',
-                    minWidth: parentWidth * 0.3,
+                    minWidth: parentWidth * 0.25,
                     style: { minHeight: 45 }
                 },
                 {
@@ -132,7 +132,7 @@ class Table extends React.Component {
                             width: (headerLength => {
                                 // Attempting to have dynamic widths for columns.
                                 return headerLength < minWidth ? minWidth : headerLength;
-                            })(resource[0].length * 15)
+                            })(resource[0].length * 8)
                         };
                     })
             ];
