@@ -1,0 +1,115 @@
+#jqtrapp {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    min-height: 400px;
+    overflow-wrap: normal;
+    position: relative;
+    white-space: normal!important;
+    word-break: break-word;
+    word-wrap: normal;
+
+    div {
+        outline: none;
+    }
+
+    h2 {
+        font-size: 22px;
+    }
+
+    .rt-resizable-header-content,
+    .rt-tfoot .rt-td {
+        font-weight: bold;
+    }
+
+    .rt-td {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .needs-estimate {
+        cursor: default;
+        display: flex;
+        flex-direction: column;
+        font-size: 28px;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .error {
+        border-radius: 4px;
+        border: 2px solid red;
+        font-size: 18px;
+        margin: 30px auto;
+        padding: 20px;
+        text-align: center;
+        &.warning {
+            border-color: #ffd500;
+        }
+        .error-type {
+            text-transform: uppercase;
+        }
+        .error-list {
+            margin: 0 auto;
+            max-width: 1200px;
+            text-align: left;
+        }
+    }
+
+    input[type="text"] {
+        box-sizing: border-box;
+        color: darkslategrey;
+        font-size: 22px;
+        height: 50px;
+        margin: 8px auto;
+        padding: 4px 8px;
+        text-overflow: clip;
+        width: 100%;
+    }
+
+    .status {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: center;
+        position: relative;
+        .keyTask {
+            position: absolute;
+            top: -10px;
+            right: 0px;
+            &:after {
+                content: '🔑';
+                font-size: 8px;
+                // padding: 0 4px 0 0;
+            }
+        }
+    }
+
+    /* https://stephanwagner.me/only-css-loading-spinner */
+
+    .loader:before {
+        content: '';
+        box-sizing: border-box;
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        width: 60px;
+        height: 60px;
+        margin-top: -15px;
+        margin-left: -15px;
+        border-radius: 50%;
+        border: 6px solid #ccc;
+        border-top-color: #07d;
+        animation: spinner .8s linear infinite;
+    }
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
