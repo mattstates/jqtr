@@ -1,7 +1,9 @@
+import Error from '../Error.jsx';
 import React from 'react';
 import ReactTable from 'react-table';
-import { printHoursPretty, lampstrackUrl } from '../utils/utils.js';
-import Error from './Error.jsx';
+import Status from './Status.jsx';
+import Time from './Time.jsx';
+import { lampstrackUrl } from '../../utils/utils.js';
 /*
 *   <Table /> Wraps the react-table component.
 *   Reference docs here: https://react-table.js.org/#/story/readme
@@ -9,8 +11,45 @@ import Error from './Error.jsx';
 class Table extends React.Component {
     constructor(props) {
         super(props);
+        this.sortByTimeValueAssignment = this.sortByTimeValueAssignment.bind(this);
+        this.sortByTime = this.sortByTime.bind(this);
     }
+
+    sortByTimeValueAssignment(value) {
+        switch (typeof value) {
+            // no task meets this criteria
+            case 'undefined':
+                return -6;
+                break;
+            // value is already a react component
+            case 'object':
+                return -5;
+                break;
+            // empty string
+            case 'string':
+                return -4;
+                break;
+            // null or a number
+            default:
+                return value;
+        }
+    }
+
+    /*
+    * descending order would be: 
+    * Highest Numerical Value > Needs Estimate (React Component) > No Task
+    */
+    sortByTime(a, b) {
+        const convertedA = this.sortByTimeValueAssignment(a);
+        const convertedB = this.sortByTimeValueAssignment(b);
+
+        if (convertedA < convertedB) return 1;
+        if (convertedA > convertedB) return -1;
+        return 0;
+    }
+
     render() {
+        console.log(this.props.issues);
         // This block dynamically adds table columns for resources that are returned from the response.
         if (this.props.issues) {
             const minWidth = 75;
@@ -31,19 +70,18 @@ class Table extends React.Component {
                 return totals;
             }, {});
 
+            // React-Table Columns: Index, Task Name, Total Time Remaining, [Dynamic Resource Queue Time Remaining]
             const columns = [
                 {
+                    Cell: props => <span>{props.viewIndex + 1}</span>,
                     Header: '',
                     accessor: 'index',
                     id: 'index',
                     sortable: false,
-                    Cell: props => <span>{props.viewIndex + 1}</span>,
-                    width: 32,
-                    style: { textAlign: 'center' }
+                    style: { textAlign: 'center' },
+                    width: 32
                 },
                 {
-                    Header: 'Initiative',
-                    Footer: '',
                     accessor: data => (
                         <React.Fragment>
                             <span className="initiative">
@@ -57,40 +95,51 @@ class Table extends React.Component {
                             </span>
                         </React.Fragment>
                     ),
+                    Footer: '',
+                    Header: 'Initiative',
                     id: 'taskTitle',
                     minWidth: parentWidth * 0.25,
                     style: { minHeight: 45 }
                 },
                 {
-                    Header: 'Status',
+                    Cell: props => <Status info={props} />,
                     Footer: '',
+                    Header: 'Status',
                     accessor: 'status',
                     maxWidth: parentWidth * 0.1,
-                    Cell: props => <Status info={props} />
+                    style: {cursor: 'default'}
                 },
                 {
-                    Header: 'Total Time Remaining',
-                    Footer: printHoursPretty(
-                        Object.values(totalResources).reduce((total, resourceTime) => {
-                            return total + resourceTime;
-                        }, 0)
-                    ),
-                    id: 'timeRemaining',
                     accessor: data => {
-                        let initialTime =
+                        let parentTaskTime =
                             data.timeProps && data.timeProps.timeRemaining
                                 ? data.timeProps.timeRemaining
                                 : 0;
-                        return printHoursPretty(
-                            data.subtasks.reduce((total, task) => {
-                                if (!task.timeProps || !task.timeProps.timeRemaining) {
-                                    return total;
-                                }
-                                return task.timeProps.timeRemaining + total;
-                            }, initialTime)
+
+                        return data.subtasks.reduce((total, task) => {
+                            if (!task.timeProps || !task.timeProps.timeRemaining) {
+                                return total;
+                            }
+                            return task.timeProps.timeRemaining + total;
+                        }, parentTaskTime);
+                    },
+                    Cell: props => <Time time={props.value} />,
+                    Footer: () => {
+                        return (
+                            <Time
+                                time={Object.values(totalResources).reduce(
+                                    (total, resourceTime) => {
+                                        return total + resourceTime;
+                                    },
+                                    0
+                                )}
+                            />
                         );
                     },
-                    maxWidth: parentWidth * 0.09
+                    Header: 'Total Time Remaining',
+                    id: 'timeRemaining',
+                    maxWidth: parentWidth * 0.09,
+                    sortMethod: this.sortByTime
                 },
                 // Spread resource-based time columns into columns list.
                 ...Object.entries(totalResources)
@@ -104,31 +153,21 @@ class Table extends React.Component {
                         else if (a[0] > b[0]) return 1;
                         else return 0;
                     })
-                    // TODO: Consider passing in dependencies so this can be more pure.
+
                     .map(resource => {
                         return {
-                            Header: resource[0],
-                            Footer: printHoursPretty(resource[1]),
-                            id: resource[0],
                             accessor: data => {
-                                /*
-                                    * Tasks that have not been estimated have a value of null
-                                    * When the value for the resource is a number, we will show it
-                                    * to the user, otherwise we will notify the user that there is
-                                    * a task that needs an estimate.
-                                    */
                                 // TODO: Make this link to the task with the issue.
-                                if (typeof data.resourceInfo[resource[0]] === 'number')
-                                    return printHoursPretty(data.resourceInfo[resource[0]]);
-                                if (data.resourceInfo[resource[0]] === null)
-                                    return (
-                                        <span title="Needs Estimate" className={'needs-estimate'}>
-                                            ⚠️
-                                        </span>
-                                    );
-                                return '';
+                                return data.resourceInfo[resource[0]];
                             },
+                            Cell: props => {
+                                return <Time time={props.value} />;
+                            },
+                            Footer: <Time time={resource[1] || 0} />,
+                            Header: resource[0],
+                            id: resource[0],
                             minWidth: minWidth,
+                            sortMethod: this.sortByTime,
                             width: (headerLength => {
                                 // Attempting to have dynamic widths for columns.
                                 return headerLength < minWidth ? minWidth : headerLength;
@@ -144,55 +183,12 @@ class Table extends React.Component {
                     showPaginationBottom={false}
                     showPageSizeOptions={false}
                     defaultPageSize={this.props.maxRows}
-                    className="-striped -highlight"
+                    className="-striped"
                 />
             );
         }
 
         return <Error />;
-    }
-}
-
-/*
-* Render the Status component in the table column object. Has access to the row's data
-* will show team name on hover.
-*/
-class Status extends React.Component {
-    constructor(props) {
-        super();
-        this.state = {
-            mousedOver: false
-        };
-        this.handleMouseHover = this.handleMouseHover.bind(this);
-    }
-
-    handleMouseHover(e) {
-        this.setState(this.toggleMousedOver);
-    }
-
-    toggleMousedOver(prevState) {
-        return {
-            mousedOver: !prevState.mousedOver
-        };
-    }
-
-    render() {
-        const showTeamName =
-            this.props.info.original.resourceGroup && this.props.info.original.resourceGroup.name;
-        const keyTask = this.props.info.original.labels &&
-            Boolean(this.props.info.original.labels.indexOf('key_task') >= 0) && (
-                <span className="keyTask" />
-            );
-        return (
-            <div
-                className="status"
-                onMouseEnter={this.handleMouseHover}
-                onMouseLeave={this.handleMouseHover}
-            >
-                {keyTask}
-                {this.state.mousedOver && showTeamName ? showTeamName : this.props.info.value}
-            </div>
-        );
     }
 }
 

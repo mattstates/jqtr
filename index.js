@@ -1,9 +1,9 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Table from './components/Table.jsx';
-import Error from './components/Error.jsx';
 import './node_modules/react-table/react-table.css';
 import './styles/styles.scss';
+import Error from './Components/Error.jsx';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Table from './Components/Table/Table.jsx';
 /* MOCK API RESPONSE DATA */
 // import sampleData from './ignore/sampleData1.js';
 // import sampleData2 from './ignore/sampleData2.js';
