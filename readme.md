@@ -1,6 +1,10 @@
 # JQTR
 
-JQTR Stands for Jira Query Time Remaining. This code is used at my company by pasting the transpiled source code into an HTML widget in confluence.
+JQTR Stands for Jira Query Time Remaining.
+
+JQTR allows a user to supply a valid JQL (*JIRA query language*) query and show a table of results to help determine the number of remaining hours left in the result set.
+
+This code is accessed at my company by pasting the transpiled source code into an HTML widget in Confluence.
 
 ## Features
 
