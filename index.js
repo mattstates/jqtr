@@ -38,7 +38,6 @@ class App extends React.Component {
     }
 
     getJiraTasks(searchQuery) {
-
         this.setState({
             loading: true,
             hasError: false,

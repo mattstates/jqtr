@@ -27,17 +27,20 @@ class Status extends React.Component {
             this.props.info.original.resourceGroup && this.props.info.original.resourceGroup.name;
         const keyTask = this.props.info.original.labels &&
             Boolean(this.props.info.original.labels.indexOf('key_task') >= 0) && (
-                <span className="keyTask" />
+                <span className="keyTask">🗝</span>
             );
 
         return (
             <div
-                className={`status${showTeamName && ' hasTeam'}`}
+                className="status"
                 onMouseEnter={this.handleMouseHover}
                 onMouseLeave={this.handleMouseHover}
             >
-                {keyTask}
                 {this.state.mousedOver && showTeamName ? showTeamName : this.props.info.value}
+                <div className="iconRow">
+                    {showTeamName ? <span className="hasTeam">⚑</span> : null}
+                    {keyTask}
+                </div>
             </div>
         );
     }

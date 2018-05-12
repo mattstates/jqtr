@@ -1,7 +1,6 @@
 import React from 'react';
 
 export default props => {
-
     let items;
     let classNames = props.classNames ? props.classNames : '';
 
@@ -26,5 +25,4 @@ export default props => {
             {items}
         </div>
     );
-
 };

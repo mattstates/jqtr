@@ -67,47 +67,43 @@
         height: 100%;
         justify-content: center;
         min-height: 40px;
+        padding-right: 12px;
         position: relative;
-        &.hasTeam {
-            &:before {
-                color: green;
-                content: '⚑';
-                font-size: 16px;
-                left: 0px;
-                position: absolute;
-                top: -8px;
-            }
-        }
-        // TODO: Make keytask and hasTeam work in a similar way style-wise.
-        .keyTask {
+        width: 100%;
+
+        .iconRow {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
             position: absolute;
             right: 0px;
-            top: -8px;
-            &:after {
-                content: '🗝';
-                font-size: 12px;
-            }
+            top: 0px;
         }
     }
-
-    /* https://stephanwagner.me/only-css-loading-spinner */
-
-    .loader:before {
-        content: '';
-        box-sizing: border-box;
-        position: absolute;
-        top: 40%;
-        left: 50%;
-        width: 60px;
-        height: 60px;
-        margin-top: -15px;
-        margin-left: -15px;
-        border-radius: 50%;
-        border: 6px solid #ccc;
-        border-top-color: #07d;
-        animation: spinner .8s linear infinite;
+    .hasTeam {
+        color: #adadad;
+    }
+    .keyTask {
+        font-size: 8px;
     }
 
+    .expandedEnabled {
+        border: 1px outset #ddd;
+        display: flex;
+        flex-direction: column;
+        height: 26px;
+        justify-content: center;
+        pointer-events: all;
+        position: relative;
+        width: 26px;
+        &.expandedIndex {
+            background-color: #efefef;
+            border-style: inset;
+        }
+
+    }
+
+    // React-Table Overrides
     .rt-resizable-header-content,
     .rt-tfoot .rt-td {
         font-weight: bold;
@@ -124,12 +120,35 @@
     }
 
     .rt-thead.-header {
+        background: #fff;
         position: sticky;
         top: 0;
-        background: #fff;
         z-index: 999;
     }
 
+    .subtable {
+        border-bottom: 1px solid #656565;
+        border-left: 0;
+        border-right: 1px solid #656565;
+        border-top: 0;
+    }
+
+    /* https://stephanwagner.me/only-css-loading-spinner */
+    .loader:before {
+        content: '';
+        box-sizing: border-box;
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        width: 60px;
+        height: 60px;
+        margin-top: -15px;
+        margin-left: -15px;
+        border-radius: 50%;
+        border: 6px solid #ccc;
+        border-top-color: #07d;
+        animation: spinner .8s linear infinite;
+    }
 }
 
 @keyframes spinner {
