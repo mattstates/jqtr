@@ -1,0 +1,5 @@
+/dist
+/.vscode
+/.cache
+/ignore
+/node_modules

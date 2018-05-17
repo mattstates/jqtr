@@ -176,7 +176,9 @@ function mapSubtasksAndResourcesToParentTask(unmappedCollection, errorCallback) 
         });
     }
 
-    return putSubtasksIntoParents(tasks);
+    return new Promise((res) => {
+        res(putSubtasksIntoParents(tasks));
+    });
 
     function putSubtasksIntoParents(subtaskCollection) {
         const mappedTasks = subtaskCollection.reduce((collection, task, index, array) => {

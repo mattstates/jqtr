@@ -36,14 +36,14 @@ class Table extends React.Component {
     * descending order would be:
     * Highest Numerical Value > Needs Estimate (React Component) > No Task
     */
-    sortByTime(a, b) {
-        const convertedA = this.sortByTimeValueAssignment(a);
-        const convertedB = this.sortByTimeValueAssignment(b);
+    sortByTime(aVal, bVal) {
+        const a = this.sortByTimeValueAssignment(aVal);
+        const b = this.sortByTimeValueAssignment(bVal);
 
-        if (convertedA < convertedB) {
+        if (a < b) {
             return 1;
         }
-        if (convertedA > convertedB) {
+        if (a > b) {
             return -1;
         }
         return 0;
@@ -120,18 +120,18 @@ class Table extends React.Component {
                         const a = aVal.key.split('-');
                         const b = bVal.key.split('-');
                         if (a[0] === b[0]) {
-                            return Number(a[1]) - Number(b[1]);
+                            return Number(b[1]) - Number(a[1]);
                         }
-                        return a[0].localeCompare(b[0]);
+                        return b[0] - a[0];
                     },
                     style: { minHeight: 45 }
                 },
                 {
                     // STATUS
+                    accessor: 'status',
                     Cell: (props) => <Status info={props} />,
                     Footer: '',
                     Header: 'Status',
-                    accessor: 'status',
                     maxWidth: parentWidth * 0.1,
                     style: { cursor: 'default' }
                 },
