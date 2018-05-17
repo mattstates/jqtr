@@ -4,17 +4,7 @@ import Error from './Components/Error.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Table from './Components/Table/Table.jsx';
-/* MOCK API RESPONSE DATA */
-// import sampleData from './ignore/sampleData1.js';
-// import sampleData2 from './ignore/sampleData2.js';
-
-import {
-    mapToUsefulData,
-    mapSubtasksAndResourcesToParentTask,
-    storageAvailable,
-    lampstrackUrl,
-    jiraApiUrl
-} from './utils/utils.js';
+import { mapToUsefulData, mapSubtasksAndResourcesToParentTask, storageAvailable, lampstrackUrl, jiraApiUrl } from './utils/utils.js';
 
 const domEntryPoint = document.getElementById('jqtrapp');
 
@@ -45,50 +35,32 @@ class App extends React.Component {
             notification: { message: '', items: [] }
         });
 
-        /* MOCK API CALL */
-        // searchQuery.length % 2 == 0 ? (searchQuery = sampleData) : (searchQuery = sampleData2);
-        // setTimeout(() => {
-        //     let data = mapSubtasksAndResourcesToParentTask(
-        //         searchQuery.issues.map(mapToUsefulData),
-        //         this.setState.bind(this)
-        //     );
-        //     this.setState({
-        //         issues: data,
-        //         loading: false
-        //     });
-        // }, 1500);
-
-        fetch(
-            `${jiraApiUrl}${window.encodeURIComponent(
-                'jql=' + window.encodeURIComponent(searchQuery) + '&maxResults=1000'
-            )}`,
-            {
-                method: 'GET',
-                credentials: 'same-origin'
-            }
-        )
-            .then(response => {
+        fetch(`${jiraApiUrl}${window.encodeURIComponent('jql=' + window.encodeURIComponent(searchQuery) + '&maxResults=1000&fields=-description')}`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        })
+            .then((response) => {
                 return response.json();
             })
-            .then(jiraData => {
-
+            .then((jiraData) => {
                 window.location.hash = `jql=${window.encodeURIComponent(searchQuery)}`;
-                this.setState({
-                    issues: mapSubtasksAndResourcesToParentTask(
-                        jiraData.issues.map(mapToUsefulData),
-                        this.setState.bind(this)
-                    ),
-                    loading: false
+
+                const issues = mapSubtasksAndResourcesToParentTask(jiraData.issues.map(mapToUsefulData), this.setState.bind(this));
+
+                issues.then((formattedIssues) => {
+                    this.setState({
+                        issues: formattedIssues,
+                        loading: false
+                    });
                 });
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
                 this.setState({
                     loading: false,
                     hasError: true,
                     notification: {
-                        message:
-                            'There was a problem getting a response. Please check your JQL query and/or try again.',
+                        message: 'There was a problem getting a response. Please check your JQL query and/or try again.',
                         items: []
                     }
                 });
@@ -100,7 +72,9 @@ class App extends React.Component {
     }
 
     submit(e) {
-        if (e.which !== 13 || !this.state.input.trim().length) return;
+        if (e.which !== 13 || !this.state.input.trim().length) {
+            return;
+        }
         if (storageAvailable) {
             window.localStorage.lpTimeRemainingQuery = this.state.input;
         }
@@ -108,36 +82,32 @@ class App extends React.Component {
     }
 
     render() {
-        return (
-            <React.Fragment>
-                <input
-                    type="text"
-                    value={this.state.input}
-                    onChange={this.changeHandler}
-                    onKeyUp={this.submit}
-                />
+        let renderComponent;
 
-                {/* show errors, otherwise loading/table */}
-                {this.state.hasError ? (
-                    <Error message={this.state.notification.message} />
-                ) : this.state.loading ? (
-                    <div className="loader" />
-                ) : (
+        // show errors, otherwise loading/table
+        if (this.state.hasError) {
+            renderComponent = <Error message={this.state.notification.message} />;
+        } else {
+            this.state.loading ?
+                (renderComponent = <div className="loader" />) :
+                (renderComponent = (
                     <Table
                         issues={this.state.issues}
                         appWidth={domEntryPoint.offsetWidth}
                         lampstrackUrl={lampstrackUrl}
                         maxRows={this.state.issues ? this.state.issues.length : 0}
                     />
-                )}
+                ));
+        }
+
+        return (
+            <React.Fragment>
+                <input type="text" value={this.state.input} onChange={this.changeHandler} onKeyUp={this.submit} />
+
+                {renderComponent}
 
                 {this.state.hasWarning && this.state.notification.message ? (
-                    <Error
-                        type={'Warning'}
-                        message={this.state.notification.message}
-                        items={this.state.notification.items}
-                        classNames={['warning']}
-                    />
+                    <Error type={'Warning'} message={this.state.notification.message} items={this.state.notification.items} classNames={['warning']} />
                 ) : (
                     ''
                 )}

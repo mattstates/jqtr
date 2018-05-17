@@ -1,5 +1,5 @@
 import React from 'react';
-import { lampstrackUrl, jiraApiUrl } from '../ignore/private.js';
+import { lampstrackUrl, jiraApiUrl, jiraApiUrlByIssue, base64Key } from '../ignore/private.js';
 
 /*
 *   Initial issue mapping of the raw response from JIRA.
@@ -16,18 +16,18 @@ function mapToUsefulData(issue) {
         projectType: fields.project.key, // "UTI", "LP", "PSS" etc.
 
         // TASK DETAILS
-        /* 
+        /*
             Type, Priority, Affects Version, Component, Labels, Resource Queue, P4 Job, Failed QA, Failed Code Review,
             Epic Link, Sprint, Status, Resolution, Fix Version
         */
         issueType: fields.issuetype.name,
         // TODO: priority?
         // TODO: affectsVersion?
-        components: fields.components
-            ? fields.components.map(component => {
-                  return { name: component.name, id: component.id };
-              })
-            : [],
+        components: fields.components ?
+            fields.components.map((component) => {
+                return { name: component.name, id: component.id };
+            }) :
+            [],
         labels: propertyCheck(fields.labels) || 'None',
         resourceQueue: fields.customfield_10050 ? fields.customfield_10050.value : 'None',
         failedQACount: propertyCheck(fields.customfield_11882) || 0,
@@ -49,7 +49,7 @@ function mapToUsefulData(issue) {
         creator: personHelper(fields.creator),
 
         // TASK DESCRIPTION
-        taskDescription: fields.description,
+        // taskDescription: fields.description, // Excluding this from the API query for now.
         // TODO: attachments?
 
         // RELATED BY/TO
@@ -60,18 +60,18 @@ function mapToUsefulData(issue) {
         // Items in the fields.subtasks array are not fully detailed issues/tasks.
         // The mapSubtasksAndResourcesToParentTask function attempts to address this, but API calls might be
         // better since the JQL Query may accidentally omit a subtask.
-        subtasks: fields.subtasks
-            ? fields.subtasks.map(subtask => {
-                  return {
-                      id: subtask.id,
-                      isSubtask: subtask.fields.issuetype.subtask,
-                      issueType: subtask.fields.issuetype.name,
-                      status: subtask.fields.status.name,
-                      taskNumber: subtask.key,
-                      taskTitle: subtask.fields.summary
-                  };
-              })
-            : [], // []
+        subtasks: fields.subtasks ?
+            fields.subtasks.map((subtask) => {
+                return {
+                    id: subtask.id,
+                    isSubtask: subtask.fields.issuetype.subtask,
+                    issueType: subtask.fields.issuetype.name,
+                    status: subtask.fields.status.name,
+                    taskNumber: subtask.key,
+                    taskTitle: subtask.fields.summary
+                };
+            }) :
+            [], // []
 
         // TIME TRACKING
         timeProps: {
@@ -91,14 +91,10 @@ function mapToUsefulData(issue) {
              * sprintInfo {Object}
              * { completeDate, endDate, goal, id, name, rapidViewId, sequence, startDate, state }
              * This value is derived from a string and the value isn't always present on fields.customfield_10281.
-             * SAMPLE VALUE: ["com.atlassian.greenhopper.service.sprint.Sprint@4263b21c[id=444,rapidViewId=158,state=ACTIVE,name=Shredders Sprint 5,startDate=2018-04-30T00:01:00.000-07:00,endDate=2018-05-14T00:01:00.000-07:00,completeDate=<null>,sequence=444,goal=]"
-length
-:
-1
-__proto__
-:
-Array(0)
-]
+             * SAMPLE VALUE:
+             * ["com.atlassian.greenhopper.service.sprint.Sprint@4263b21c[id=444,rapidViewId=158,state=
+             * ACTIVE,name=Shredders Sprint 5,startDate=2018-04-30T00:01:00.000-07:00,endDate=2018-05-14T00:01:00.000-07:00,
+             * completeDate=<null>,sequence=444,goal=]"length:1__proto__:Array(0)]
              */
             sprintInfo: (() => {
                 if (!fields.customfield_10281) {
@@ -120,6 +116,10 @@ Array(0)
         }
     };
 
+    if (mappedIssue.isSubtask) {
+        mappedIssue.parent = fields.parent;
+    }
+
     return mappedIssue;
     //customfield_13180 has details about Branches, Builds, etc. in the Development section of JIRA.
 }
@@ -131,76 +131,120 @@ Array(0)
 *   * I am sure that passing setState here should be wrapped and called from the invoking component
 *   TODO: Refactor...
 */
-function mapSubtasksAndResourcesToParentTask(tasks, errorCallback) {
+function mapSubtasksAndResourcesToParentTask(unmappedCollection, errorCallback) {
     const errors = {
         message: '',
         items: []
     };
-    const mappedTasks = tasks.reduce((collection, task, index, array) => {
-        if (task.isSubtask) {
-            // Remove Subtasks from the top level array.
-            return collection;
+
+    const missingItemWarning = 'Your JQL query has task(s) omitted. This may cause time estimation errors, consider updating your JQL query.';
+
+    let tasks = unmappedCollection;
+
+    let missingParentTaskIds = tasks.filter((task) => task.isSubtask).reduce((prev, curr) => {
+        if (
+            tasks.find((item) => {
+                return item.id === curr.parent.id;
+            }) === undefined
+        ) {
+            return [...prev, curr.parent.id];
         }
+        return prev;
+    }, []);
 
-        // Parent task level resourceInfo accumulation.
-        task.resourceInfo = {};
+    if (missingParentTaskIds.length) {
+        missingParentTaskIds = missingParentTaskIds.map((id) => getMissingParentTask(id));
 
-        task.resourceInfo[task.resourceQueue] = task.timeProps.timeEstimate;
+        return Promise.all(missingParentTaskIds).then((data) => {
+            console.warn('JQL fetched subtasks where the parent was omitted. Missing parents were added:', data);
 
-        if (!task.subtasks.length) {
-            // Parent tasks without subtasks carryover
-            return [...collection, task];
-        }
-
-        // Attempt to map fully detailed subtask to a parent's subtasks collection using the issue.id as a primary key.
-        task.subtasks = task.subtasks.map(subtask => {
-            const fullSubtask = array.find(element => element.id === subtask.id);
-            if (!fullSubtask) {
-                // TODO: This issue may be fixed with API calls.
-                console.warn(
-                    `JQL query has omitted a subtask (${subtask.taskNumber}: ${subtask.taskTitle}).`
-                );
-                errors.message =
-                    'Your JQL query has subtask(s) omitted. This may cause time estimation errors, consider updating your JQL query.';
+            data.forEach((missingTask) => {
+                errors.message = missingItemWarning;
                 errors.items = [
                     ...errors.items,
-                    <a href={`${lampstrackUrl}${subtask.taskNumber}`}>{subtask.taskTitle}</a>
+                    <React.Fragment key={missingTask.taskNumber}>
+                        <a href={`${lampstrackUrl}${missingTask.taskNumber}`} key={missingTask.taskNumber}>
+                            {missingTask.taskTitle}
+                        </a>{' '}
+                        <span className="errorItemMessage">(Parent task was added to the table for you.)</span>
+                    </React.Fragment>
                 ];
-            }
-            return fullSubtask ? fullSubtask : subtask;
+            });
+
+            tasks = [...tasks, ...data];
+            return putSubtasksIntoParents(tasks);
         });
-
-        task.resourceInfo = task.subtasks.reduce((totals, subtask) => {
-            try {
-                totals[subtask.resourceQueue]
-                    ? (totals[subtask.resourceQueue] += subtask.timeProps.timeEstimate)
-                    : (totals[subtask.resourceQueue] = subtask.timeProps.timeEstimate);
-            } catch (err) {
-                console.error(`${err.message} for ${subtask.taskNumber}: ${subtask.taskTitle}`);
-            }
-            return totals;
-        }, Object.assign(task.resourceInfo, {}));
-
-        return [...collection, task];
-    }, []);
-    if (errorCallback) {
-        errorCallback({ notification: errors, hasWarning: Boolean(errors.items.length) });
     }
-    return mappedTasks;
+
+    return putSubtasksIntoParents(tasks);
+
+    function putSubtasksIntoParents(subtaskCollection) {
+        const mappedTasks = subtaskCollection.reduce((collection, task, index, array) => {
+            if (task.isSubtask) {
+                return collection;
+            }
+
+            // resourceInfo accumulation at the parent task level.
+            task.resourceInfo = {};
+
+            task.resourceInfo[task.resourceQueue] = task.timeProps.timeEstimate;
+
+            if (!task.subtasks.length) {
+                // Parent tasks without subtasks will carryover
+                return [...collection, task];
+            }
+
+            // Attempt to map fully detailed subtask to a parent's subtasks collection using the issue.id as a primary key.
+            task.subtasks = task.subtasks.map((subtask) => {
+                const fullSubtask = array.find((element) => element.id === subtask.id);
+                if (!fullSubtask) {
+                    console.warn(`JQL query has omitted a subtask (${subtask.taskNumber}: ${subtask.taskTitle}).`);
+
+                    // TODO: Refactor how items are passed as warnings/errors.
+                    errors.message = missingItemWarning;
+                    errors.items = [
+                        ...errors.items,
+                        <a href={`${lampstrackUrl}${subtask.taskNumber}`} key={subtask.taskNumber}>
+                            {subtask.taskTitle}
+                        </a>
+                    ];
+                }
+                return fullSubtask ? fullSubtask : subtask;
+            });
+
+            task.resourceInfo = task.subtasks.reduce((totals, subtask) => {
+                try {
+                    totals[subtask.resourceQueue] ?
+                        (totals[subtask.resourceQueue] += subtask.timeProps.timeEstimate) :
+                        (totals[subtask.resourceQueue] = subtask.timeProps.timeEstimate);
+                } catch (err) {
+                    console.error(`${err.message} for ${subtask.taskNumber}: ${subtask.taskTitle}`);
+                }
+                return totals;
+            }, Object.assign(task.resourceInfo, {}));
+
+            return [...collection, task];
+        }, []);
+
+        if (errorCallback) {
+            errorCallback({ notification: errors, hasWarning: Boolean(errors.items.length) });
+        }
+        return mappedTasks;
+    }
 }
 
 function personHelper(roleField) {
-    return roleField
-        ? {
-              name: roleField.displayName,
-              avatarUrl: roleField.avatarUrls['24x24'],
-              email: roleField.emailAddress
-          }
-        : {
-              name: 'None',
-              avatarUrl: '',
-              email: ''
-          };
+    return roleField ?
+        {
+            name: roleField.displayName,
+            avatarUrl: roleField.avatarUrls['24x24'],
+            email: roleField.emailAddress
+        } :
+        {
+            name: 'None',
+            avatarUrl: '',
+            email: ''
+        };
 }
 
 function propertyCheck(property) {
@@ -216,7 +260,7 @@ function printHoursPretty(duration) {
     return prettyTime || '0h';
 }
 
-const storageAvailable = (type => {
+const storageAvailable = ((type) => {
     // Ported from original JQTR
     try {
         var storage = window[type],
@@ -229,11 +273,22 @@ const storageAvailable = (type => {
     }
 })('localStorage');
 
-export {
-    mapToUsefulData,
-    mapSubtasksAndResourcesToParentTask,
-    printHoursPretty,
-    storageAvailable,
-    jiraApiUrl,
-    lampstrackUrl
-};
+/*
+* Makes an API call to JIRA to grab fuller data for parent tasks that may have gone missing in the initial JQL query.
+*/
+function getMissingParentTask(taskId) {
+    let headers = new Headers();
+    headers.append('Access-Control-Allow-Credentials', 'true');
+    headers.append('Authorization', `Basic ${base64Key}`);
+    // Create your own JIRA API Key this one is tied to: mstates.
+
+    return fetch(jiraApiUrlByIssue + taskId, {
+        method: 'GET',
+        headers: headers,
+        credentials: 'include'
+    })
+        .then((data) => data.json())
+        .then(mapToUsefulData);
+}
+
+export { mapToUsefulData, mapSubtasksAndResourcesToParentTask, printHoursPretty, storageAvailable, jiraApiUrl, lampstrackUrl };

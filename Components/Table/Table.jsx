@@ -3,7 +3,7 @@ import React from 'react';
 import ReactTable from 'react-table';
 import Status from './Status.jsx';
 import Time from './Time.jsx';
-import { lampstrackUrl } from '../../utils/utils.js';
+
 /*
 *   <Table /> Wraps the react-table component.
 *   Reference docs here: https://react-table.js.org/#/story/readme
@@ -20,15 +20,12 @@ class Table extends React.Component {
             // no task meets this criteria
             case 'undefined':
                 return -6;
-                break;
             // value is already a react component
             case 'object':
                 return -5;
-                break;
             // empty string
             case 'string':
                 return -4;
-                break;
             // null or a number
             default:
                 return value;
@@ -36,15 +33,19 @@ class Table extends React.Component {
     }
 
     /*
-    * descending order would be: 
+    * descending order would be:
     * Highest Numerical Value > Needs Estimate (React Component) > No Task
     */
     sortByTime(a, b) {
         const convertedA = this.sortByTimeValueAssignment(a);
         const convertedB = this.sortByTimeValueAssignment(b);
 
-        if (convertedA < convertedB) return 1;
-        if (convertedA > convertedB) return -1;
+        if (convertedA < convertedB) {
+            return 1;
+        }
+        if (convertedA > convertedB) {
+            return -1;
+        }
         return 0;
     }
 
@@ -56,15 +57,11 @@ class Table extends React.Component {
             // totalResources is an object where the keys are the resource name and the values are agregated total time.
             const totalResources = this.props.issues.reduce((totals, task) => {
                 if (!task.resourceInfo) {
-                    console.warn(
-                        `Some tasks may be missing resource information. Check ${task.taskNumber}`
-                    );
+                    console.warn(`Some tasks may be missing resource information. Check ${task.taskNumber}`);
                     return totals;
                 }
-                Object.entries(task.resourceInfo).forEach(keyValue => {
-                    totals[keyValue[0]]
-                        ? (totals[keyValue[0]] += keyValue[1])
-                        : (totals[keyValue[0]] = keyValue[1]);
+                Object.entries(task.resourceInfo).forEach((keyValue) => {
+                    totals[keyValue[0]] ? (totals[keyValue[0]] += keyValue[1]) : (totals[keyValue[0]] = keyValue[1]);
                 });
                 return totals;
             }, {});
@@ -75,26 +72,26 @@ class Table extends React.Component {
                     return -1;
                 } else if (b[0] === 'None') {
                     return 1;
-                } else if (a[0] < b[0]) return -1;
-                else if (a[0] > b[0]) return 1;
-                else return 0;
+                } else if (a[0] < b[0]) {
+                    return -1;
+                } else if (a[0] > b[0]) {
+                    return 1;
+                }
+                return 0;
             });
 
             // React-Table Columns: Index, Task Name, Total Time Remaining, [Dynamic Resource Queue Time Remaining]
             const columns = [
                 {
                     // INDEX & EXPANDER INFO
-                    accessor: data => {
+                    accessor: () => {
                         return 'index';
                     },
                     expander: true,
-                    Expander: function({ isExpanded, ...rest }) {
+                    Expander: function({ isExpanded, ...args }) {
                         const { viewIndex, original } = arguments[0];
                         const enabled = Boolean(original.subtasks.length);
-                        const classes = [
-                            isExpanded ? 'expandedIndex' : 'closedIndex',
-                            enabled ? 'expandedEnabled' : ''
-                        ];
+                        const classes = [isExpanded ? 'expandedIndex' : 'closedIndex', enabled ? 'expandedEnabled' : ''];
                         return <div className={classes.join(' ')}>{viewIndex + 1}</div>;
                     },
                     id: 'index',
@@ -104,16 +101,14 @@ class Table extends React.Component {
                 },
                 {
                     // INITIATIVES
-                    accessor: data => (
-                        <React.Fragment>
+                    accessor: (data) => (
+                        <React.Fragment key={data.taskNumber}>
                             <span className="initiative">
                                 <span>
                                     {data.taskNumber}
                                     {': '}
                                 </span>
-                                <a href={`${this.props.lampstrackUrl}${data.taskNumber}`}>
-                                    {data.taskTitle}
-                                </a>
+                                <a href={`${this.props.lampstrackUrl}${data.taskNumber}`}>{data.taskTitle}</a>
                             </span>
                         </React.Fragment>
                     ),
@@ -121,11 +116,19 @@ class Table extends React.Component {
                     Header: 'Initiative',
                     id: 'taskTitle',
                     minWidth: parentWidth * 0.25,
+                    sortMethod: (aVal, bVal) => {
+                        const a = aVal.key.split('-');
+                        const b = bVal.key.split('-');
+                        if (a[0] === b[0]) {
+                            return Number(a[1]) - Number(b[1]);
+                        }
+                        return a[0].localeCompare(b[0]);
+                    },
                     style: { minHeight: 45 }
                 },
                 {
                     // STATUS
-                    Cell: props => <Status info={props} />,
+                    Cell: (props) => <Status info={props} />,
                     Footer: '',
                     Header: 'Status',
                     accessor: 'status',
@@ -134,11 +137,8 @@ class Table extends React.Component {
                 },
                 {
                     // TOTAL TIME REMAINING
-                    accessor: data => {
-                        let parentTaskTime =
-                            data.timeProps && data.timeProps.timeRemaining
-                                ? data.timeProps.timeRemaining
-                                : 0;
+                    accessor: (data) => {
+                        let parentTaskTime = data.timeProps && data.timeProps.timeRemaining ? data.timeProps.timeRemaining : 0;
 
                         return data.subtasks.reduce((total, task) => {
                             if (!task.timeProps || !task.timeProps.timeRemaining) {
@@ -147,16 +147,13 @@ class Table extends React.Component {
                             return task.timeProps.timeRemaining + total;
                         }, parentTaskTime);
                     },
-                    Cell: props => <Time time={props.value} />,
+                    Cell: (props) => <Time time={props.value} />,
                     Footer: () => {
                         return (
                             <Time
-                                time={Object.values(totalResources).reduce(
-                                    (total, resourceTime) => {
-                                        return total + resourceTime;
-                                    },
-                                    0
-                                )}
+                                time={Object.values(totalResources).reduce((total, resourceTime) => {
+                                    return total + resourceTime;
+                                }, 0)}
                             />
                         );
                     },
@@ -166,17 +163,17 @@ class Table extends React.Component {
                     sortMethod: this.sortByTime
                 },
                 // Spread resource-based time columns into columns list.
-                ...resourceList.map(resource => {
+                ...resourceList.map((resource) => {
                     return {
-                        accessor: data => data.resourceInfo[resource[0]],
-                        Cell: props => <Time time={props.value} />,
+                        accessor: (data) => data.resourceInfo[resource[0]],
+                        Cell: (props) => <Time time={props.value} />,
                         Footer: <Time time={resource[1] || 0} />,
                         Header: resource[0],
                         id: resource[0],
                         minWidth: minWidth,
                         sortMethod: this.sortByTime,
                         // TODO: Extract this logic since it is also used in the subtable.
-                        width: (headerLength => {
+                        width: ((headerLength) => {
                             // Attempting to have dynamic widths for columns.
                             return headerLength < minWidth ? minWidth : headerLength;
                         })(resource[0].length * 8)
@@ -192,7 +189,7 @@ class Table extends React.Component {
                     showPageSizeOptions={false}
                     defaultPageSize={this.props.maxRows}
                     className="-striped"
-                    SubComponent={row => {
+                    SubComponent={(row) => {
                         if (row.original.subtasks) {
                             return (
                                 <SubTable
@@ -200,6 +197,7 @@ class Table extends React.Component {
                                     appWidth={this.props.appWidth}
                                     resourceList={resourceList}
                                     minWidth={minWidth}
+                                    lampstrackUrl={this.props.lampstrackUrl}
                                 />
                             );
                         }
@@ -228,14 +226,14 @@ function SubTable(props) {
         },
         {
             // INITIATIVE
-            accessor: data => (
+            accessor: (data) => (
                 <React.Fragment>
                     <span className="initiative">
                         <span>
                             {data.taskNumber}
                             {': '}
                         </span>
-                        <a href={`${data.taskNumber}`}>{data.taskTitle}</a>
+                        <a href={`${props.lampstrackUrl}${data.taskNumber}`}>{data.taskTitle}</a>
                     </span>
                 </React.Fragment>
             ),
@@ -245,7 +243,7 @@ function SubTable(props) {
         },
         {
             // STATUS
-            Cell: props => <Status info={props} />,
+            Cell: (props) => <Status info={props} />,
             accessor: 'status',
             maxWidth: parentWidth * 0.1,
             style: { cursor: 'default' }
@@ -259,26 +257,24 @@ function SubTable(props) {
             sortable: false
         },
 
-        ...props.resourceList.map(resource => {
-            {
-                return {
-                    accessor: data => {
-                        if (data.resourceQueue === resource[0] && !data.timeProps.needsEstimate) {
-                            return data.timeProps.timeEstimate;
-                        }
-                        return '';
-                    },
-                    Cell: props => <Time time={props.value} test={props} />,
+        ...props.resourceList.map((resource) => {
+            return {
+                accessor: (data) => {
+                    if (data.resourceQueue === resource[0] && !data.timeProps.needsEstimate) {
+                        return data.timeProps.timeEstimate;
+                    }
+                    return '';
+                },
+                Cell: (props) => <Time time={props.value} test={props} />,
 
-                    id: resource[0],
-                    minWidth: minWidth,
-                    width: (headerLength => {
-                        // Attempting to have dynamic widths for columns.
-                        // TODO: Extract this into a function now that it is used in more than one place.
-                        return headerLength < minWidth ? minWidth : headerLength;
-                    })(resource[0].length * 8)
-                };
-            }
+                id: resource[0],
+                minWidth: minWidth,
+                width: ((headerLength) => {
+                    // Attempting to have dynamic widths for columns.
+                    // TODO: Extract this into a function now that it is used in more than one place.
+                    return headerLength < minWidth ? minWidth : headerLength;
+                })(resource[0].length * 8)
+            };
         })
     ];
 
