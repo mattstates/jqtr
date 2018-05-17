@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default props => {
+export default (props) => {
     let items;
     let classNames = props.classNames ? props.classNames : '';
 
@@ -19,8 +19,7 @@ export default props => {
     return (
         <div className={['error', ...classNames].join(' ')}>
             <h2>
-                <span className="error-type">{props.type ? props.type : '😔 Error'}</span>:{' '}
-                {props.message ? props.message : 'Something went wrong.'}
+                <span className="error-type">{props.type ? props.type : '😔 Error'}</span>: {props.message ? props.message : 'Something went wrong.'}
             </h2>
             {items}
         </div>
