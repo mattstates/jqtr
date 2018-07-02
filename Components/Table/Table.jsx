@@ -13,6 +13,9 @@ class Table extends React.Component {
         super(props);
         this.sortByTimeValueAssignment = this.sortByTimeValueAssignment.bind(this);
         this.sortByTime = this.sortByTime.bind(this);
+        this.state = {
+            viewType: 'initiative'
+        };
     }
 
     sortByTimeValueAssignment(value) {
@@ -32,6 +35,31 @@ class Table extends React.Component {
         }
     }
 
+    /**
+     * @param {Array} taskCollection
+     * Returns an object where each key is a resourceGroup type and its value is the aggregated total of time.
+     */
+    resourceAccumulator(taskCollection) {
+        return taskCollection.reduce((totals, task) => {
+            if (task.subtasks.length) {
+                const subtaskResources = this.resourceAccumulator(task.subtasks);
+                Object.keys(subtaskResources).forEach((key) => {
+                    totals[key] ? (totals[key] += subtaskResources[key]) : (totals[key] = subtaskResources[key]);
+                });
+            }
+            if (task.omitFromJqtr) {
+                return totals;
+            }
+
+            if (totals[task.resourceQueue]) {
+                totals[task.resourceQueue] += task.timeProps.timeRemaining;
+            } else {
+                totals[task.resourceQueue] = task.timeProps.timeRemaining;
+            }
+            return totals;
+        }, {});
+    }
+
     /*
     * descending order would be:
     * Highest Numerical Value > Needs Estimate (React Component) > No Task
@@ -49,36 +77,47 @@ class Table extends React.Component {
         return 0;
     }
 
+    resourceNameSort(a, b) {
+        // Sorting Rules Ported from original JQTR (Alphabetical with "None" coming first.)
+        if (a[0] === 'None') {
+            return -1;
+        } else if (b[0] === 'None') {
+            return 1;
+        } else if (a[0] < b[0]) {
+            return -1;
+        } else if (a[0] > b[0]) {
+            return 1;
+        }
+        return 0;
+    }
+
+    // TODO: WIP.
+    formatAssigneeView(data) {
+        const allTasks = data
+            .reduce((accumulation, task) => {
+                return task.subtasks.length ? [...accumulation, task, ...task.subtasks] : [...accumulation, task];
+            }, [])
+            .filter((task) => !task.omitFromJqtr);
+        return allTasks.reduce((assignees, task) => {
+            let name = task.assignee.name
+                .replace(/"/g, '')
+                .trim()
+                .replace(/None/i, 'Unassigned');
+            assignees[name] ? assignees[name].push(task) : (assignees[name] = [task]);
+            return assignees;
+        }, {});
+    }
+
     render() {
         // This block dynamically adds table columns for resources that are returned from the response.
         if (this.props.issues) {
             const minWidth = 75;
             const parentWidth = this.props.appWidth;
             // totalResources is an object where the keys are the resource name and the values are agregated total time.
-            const totalResources = this.props.issues.reduce((totals, task) => {
-                if (!task.resourceInfo) {
-                    console.warn(`Some tasks may be missing resource information. Check ${task.taskNumber}`);
-                    return totals;
-                }
-                Object.entries(task.resourceInfo).forEach((keyValue) => {
-                    totals[keyValue[0]] ? (totals[keyValue[0]] += keyValue[1]) : (totals[keyValue[0]] = keyValue[1]);
-                });
-                return totals;
-            }, {});
+            const totalResources = this.resourceAccumulator(this.props.issues);
 
-            const resourceList = Object.entries(totalResources).sort((a, b) => {
-                // Sorting Rules Ported from original JQTR (Alphabetical with "None" coming first.)
-                if (a[0] === 'None') {
-                    return -1;
-                } else if (b[0] === 'None') {
-                    return 1;
-                } else if (a[0] < b[0]) {
-                    return -1;
-                } else if (a[0] > b[0]) {
-                    return 1;
-                }
-                return 0;
-            });
+            // 2D array of [...[resourceQueue, total]]
+            const sortedResourceList = Object.entries(totalResources).sort(this.resourceNameSort);
 
             // React-Table Columns: Index, Task Name, Total Time Remaining, [Dynamic Resource Queue Time Remaining]
             const columns = [
@@ -129,7 +168,7 @@ class Table extends React.Component {
                 {
                     // STATUS
                     accessor: 'status',
-                    Cell: (props) => <Status info={props} />,
+                    Cell: (props) => (props.original.subtasks.length ? null : <Status info={props} />),
                     Footer: '',
                     Header: 'Status',
                     maxWidth: parentWidth * 0.1,
@@ -137,16 +176,10 @@ class Table extends React.Component {
                 },
                 {
                     // TOTAL TIME REMAINING
-                    accessor: (data) => {
-                        let parentTaskTime = data.timeProps && data.timeProps.timeRemaining ? data.timeProps.timeRemaining : 0;
-
-                        return data.subtasks.reduce((total, task) => {
-                            if (!task.timeProps || !task.timeProps.timeRemaining) {
-                                return total;
-                            }
-                            return task.timeProps.timeRemaining + total;
-                        }, parentTaskTime);
-                    },
+                    accessor: (data) =>
+                        Object.values(this.resourceAccumulator([data])).reduce((total, value) => {
+                            return total + value;
+                        }, 0),
                     Cell: (props) => <Time time={props.value} />,
                     Footer: () => {
                         return (
@@ -163,9 +196,9 @@ class Table extends React.Component {
                     sortMethod: this.sortByTime
                 },
                 // Spread resource-based time columns into columns list.
-                ...resourceList.map((resource) => {
+                ...sortedResourceList.map((resource) => {
                     return {
-                        accessor: (data) => data.resourceInfo[resource[0]],
+                        accessor: (data) => this.resourceAccumulator([data])[resource[0]],
                         Cell: (props) => <Time time={props.value} />,
                         Footer: <Time time={resource[1] || 0} />,
                         Header: resource[0],
@@ -190,16 +223,29 @@ class Table extends React.Component {
                     defaultPageSize={this.props.maxRows}
                     className="-striped"
                     SubComponent={(row) => {
-                        if (row.original.subtasks) {
-                            return (
-                                <SubTable
-                                    data={row.original.subtasks}
-                                    appWidth={this.props.appWidth}
-                                    resourceList={resourceList}
-                                    minWidth={minWidth}
-                                    lampstrackUrl={this.props.lampstrackUrl}
-                                />
-                            );
+                        switch (this.state.viewType) {
+                            case 'initiative':
+                                return (
+                                    <SubTable
+                                        data={this.initiativeData(row)}
+                                        appWidth={this.props.appWidth}
+                                        resourceList={sortedResourceList}
+                                        minWidth={minWidth}
+                                        lampstrackUrl={this.props.lampstrackUrl}
+                                    />
+                                );
+                            case 'assignee':
+                                return (
+                                    <SubTable
+                                        data={this.initiativeData(row)}
+                                        appWidth={this.props.appWidth}
+                                        resourceList={sortedResourceList}
+                                        minWidth={minWidth}
+                                        lampstrackUrl={this.props.lampstrackUrl}
+                                    />
+                                );
+                            default:
+                                return;
                         }
                     }}
                 />
@@ -207,6 +253,10 @@ class Table extends React.Component {
         }
 
         return <Error />;
+    }
+
+    initiativeData(rowInfo) {
+        return [...rowInfo.original.subtasks, rowInfo.original].filter((task) => !task.omitFromJqtr).sort((a, b) => Number(a.id) - Number(b.id));
     }
 }
 

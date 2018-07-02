@@ -4,7 +4,7 @@ import Error from './Components/Error.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Table from './Components/Table/Table.jsx';
-import { mapToUsefulData, mapSubtasksAndResourcesToParentTask, storageAvailable, lampstrackUrl, jiraApiUrl } from './utils/utils.js';
+import { mapToUsefulData, gatherAllTasks, storageAvailable, lampstrackUrl, jiraApiUrl } from './utils/utils.js';
 
 const domEntryPoint = document.getElementById('jqtrapp');
 
@@ -45,7 +45,7 @@ class App extends React.Component {
             .then((jiraData) => {
                 window.location.hash = `jql=${window.encodeURIComponent(searchQuery)}`;
 
-                const issues = mapSubtasksAndResourcesToParentTask(jiraData.issues.map(mapToUsefulData), this.setState.bind(this));
+                const issues = gatherAllTasks(jiraData.issues.map(mapToUsefulData), this.setState.bind(this));
 
                 issues.then((formattedIssues) => {
                     this.setState({
