@@ -1,4 +1,3 @@
-import React from 'react';
 import { lampstrackUrl, jiraApiUrl, jiraApiUrlByIssue, base64Key } from '../ignore/private.js';
 
 /*
@@ -58,7 +57,7 @@ function mapToUsefulData(issue) {
         isSubtask: fields.issuetype.subtask,
 
         // Items in the fields.subtasks array are not fully detailed issues/tasks.
-        // The mapSubtasksAndResourcesToParentTask function attempts to address this, but API calls might be
+        // The gatherAllTasks and mapSubtasksToParents functions attempts to address this, but API calls might be
         // better since the JQL Query may accidentally omit a subtask.
         subtasks: fields.subtasks ?
             fields.subtasks.map((subtask) => {
@@ -113,7 +112,9 @@ function mapToUsefulData(issue) {
                         return Object.assign(prev, temp);
                     }, {});
             })()
-        }
+        },
+
+        omitFromJqtr: false
     };
 
     if (mappedIssue.isSubtask) {
@@ -131,108 +132,60 @@ function mapToUsefulData(issue) {
 *   * I am sure that passing setState here should be wrapped and called from the invoking component
 *   TODO: Refactor...
 */
-function mapSubtasksAndResourcesToParentTask(unmappedCollection, errorCallback) {
-    const errors = {
-        message: '',
-        items: []
-    };
 
-    const missingItemWarning = 'Your JQL query has task(s) omitted. This may cause time estimation errors, consider updating your JQL query.';
-
+function gatherAllTasks(unmappedCollection, errorCallback) {
     let tasks = unmappedCollection;
 
-    let missingParentTaskIds = tasks.filter((task) => task.isSubtask).reduce((prev, curr) => {
-        if (
-            tasks.find((item) => {
-                return item.id === curr.parent.id;
-            }) === undefined
-        ) {
-            return [...prev, curr.parent.id];
-        }
-        return prev;
-    }, []);
+    let missingParentTaskIds = findMissingParentTasks(unmappedCollection);
 
     if (missingParentTaskIds.length) {
-        missingParentTaskIds = missingParentTaskIds.map((id) => getMissingParentTask(id));
+        return Promise.all(missingParentTaskIds.map((id) => getJiraTaskById(id))).then((data) => {
+            // data parameter is an array of parent task objects.
+            console.warn('JQL query fetched subtasks where the parent was omitted. Missing parents were added:', data);
+            const mappedData = data.map((task) => {
+                task.omitFromJqtr = true;
+                task.subtasks.map((subtask) => {
+                    if (!unmappedCollection.find((task) => task.id === subtask.id)) {
+                        subtask.omitFromJqtr = true;
+                    }
+                    return subtask;
+                });
 
-        return Promise.all(missingParentTaskIds).then((data) => {
-            console.warn('JQL fetched subtasks where the parent was omitted. Missing parents were added:', data);
-
-            data.forEach((missingTask) => {
-                errors.message = missingItemWarning;
-                errors.items = [
-                    ...errors.items,
-                    <React.Fragment key={missingTask.taskNumber}>
-                        <a href={`${lampstrackUrl}${missingTask.taskNumber}`} key={missingTask.taskNumber}>
-                            {missingTask.taskTitle}
-                        </a>{' '}
-                        <span className="errorItemMessage">(Parent task was added to the table for you.)</span>
-                    </React.Fragment>
-                ];
+                return task;
             });
 
-            tasks = [...tasks, ...data];
-            return putSubtasksIntoParents(tasks);
+            // Merge orginal JQL queried tasks with fetched parent tasks. All fetched tasks are flagged with omitFromJqtr = true.
+            return mapSubtasksToParents([...tasks, ...mappedData]);
         });
     }
 
-    return new Promise((res) => {
-        res(putSubtasksIntoParents(tasks));
+    return new Promise((resolve) => {
+        resolve(mapSubtasksToParents(tasks));
     });
+}
 
-    function putSubtasksIntoParents(subtaskCollection) {
-        const mappedTasks = subtaskCollection.reduce((collection, task, index, array) => {
-            if (task.isSubtask) {
-                return collection;
-            }
-
-            // resourceInfo accumulation at the parent task level.
-            task.resourceInfo = {};
-
-            task.resourceInfo[task.resourceQueue] = task.timeProps.timeEstimate;
-
-            if (!task.subtasks.length) {
-                // Parent tasks without subtasks will carryover
-                return [...collection, task];
-            }
-
-            // Attempt to map fully detailed subtask to a parent's subtasks collection using the issue.id as a primary key.
-            task.subtasks = task.subtasks.map((subtask) => {
-                const fullSubtask = array.find((element) => element.id === subtask.id);
-                if (!fullSubtask) {
-                    console.warn(`JQL query has omitted a subtask (${subtask.taskNumber}: ${subtask.taskTitle}).`);
-
-                    // TODO: Refactor how items are passed as warnings/errors.
-                    errors.message = missingItemWarning;
-                    errors.items = [
-                        ...errors.items,
-                        <a href={`${lampstrackUrl}${subtask.taskNumber}`} key={subtask.taskNumber}>
-                            {subtask.taskTitle}
-                        </a>
-                    ];
-                }
-                return fullSubtask ? fullSubtask : subtask;
-            });
-
-            task.resourceInfo = task.subtasks.reduce((totals, subtask) => {
-                try {
-                    totals[subtask.resourceQueue] ?
-                        (totals[subtask.resourceQueue] += subtask.timeProps.timeEstimate) :
-                        (totals[subtask.resourceQueue] = subtask.timeProps.timeEstimate);
-                } catch (err) {
-                    console.error(`${err.message} for ${subtask.taskNumber}: ${subtask.taskTitle}`);
-                }
-                return totals;
-            }, Object.assign(task.resourceInfo, {}));
-
-            return [...collection, task];
-        }, []);
-
-        if (errorCallback) {
-            errorCallback({ notification: errors, hasWarning: Boolean(errors.items.length) });
+function mapSubtasksToParents(taskCollection) {
+    return taskCollection.reduce((collection, task, index, array) => {
+        if (task.isSubtask) {
+            return collection;
         }
-        return mappedTasks;
-    }
+
+        if (task.subtasks.length) {
+            task.subtasks = groupTasksByKey(array, task.subtasks, 'id');
+        }
+
+        return [...collection, task];
+    }, []);
+}
+
+function groupTasksByKey(parentArray, childArray, primaryKey) {
+    return childArray
+        .map((childArrayTask) => {
+            const matchedTask = parentArray.find((parentArrayTask) => parentArrayTask[primaryKey] === childArrayTask[primaryKey]);
+            //TODO: Refactor, remove the console.warn to make this more pure.
+            return matchedTask ? matchedTask : console.warn(`The JQL query has omitted a subtask (${childArrayTask.taskNumber}: ${childArrayTask.taskTitle}).`);
+        })
+        .filter((subtask) => Boolean(subtask));
 }
 
 function personHelper(roleField) {
@@ -247,6 +200,27 @@ function personHelper(roleField) {
             avatarUrl: '',
             email: ''
         };
+}
+
+/**
+ * @param collection: Array of Jira Tasks
+ * returns Array of unique parent task IDs where the parent task was not in the original collection.
+ */
+function findMissingParentTasks(collection) {
+    return Array.from(
+        new Set(
+            collection.filter((task) => task.isSubtask).reduce((prev, curr) => {
+                if (
+                    collection.find((item) => {
+                        return item.id === curr.parent.id;
+                    }) === undefined
+                ) {
+                    return [...prev, curr.parent.id];
+                }
+                return prev;
+            }, [])
+        )
+    );
 }
 
 function propertyCheck(property) {
@@ -275,10 +249,12 @@ const storageAvailable = ((type) => {
     }
 })('localStorage');
 
-/*
-* Makes an API call to JIRA to grab fuller data for parent tasks that may have gone missing in the initial JQL query.
-*/
-function getMissingParentTask(taskId) {
+/**
+ * Makes an API call to JIRA to get full Jira task information.
+ * @param taskId - string
+ * returns - Javascript Object with Jira Task information.
+ */
+function getJiraTaskById(taskId) {
     let headers = new Headers();
     headers.append('Access-Control-Allow-Credentials', 'true');
     headers.append('Authorization', `Basic ${base64Key}`);
@@ -293,4 +269,11 @@ function getMissingParentTask(taskId) {
         .then(mapToUsefulData);
 }
 
-export { mapToUsefulData, mapSubtasksAndResourcesToParentTask, printHoursPretty, storageAvailable, jiraApiUrl, lampstrackUrl };
+function titleCase(string) {
+    return string
+        .split(' ')
+        .map((word) => `${word[0].toUpperCase()}${word.substr(1)}`)
+        .join(' ');
+}
+
+export { mapToUsefulData, gatherAllTasks, printHoursPretty, storageAvailable, jiraApiUrl, lampstrackUrl, titleCase };
