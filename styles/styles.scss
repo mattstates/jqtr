@@ -87,6 +87,14 @@
         font-size: 8px;
     }
 
+    .viewSelector {
+        display: flex;
+        flex-direction: column;
+        div.disabled { pointer-events: none; }
+        div.initiative:before { content: '💡' }
+        div.assignee:before { content: '👥' }
+    }
+
     .expandedEnabled {
         border: 1px outset #ddd;
         display: flex;

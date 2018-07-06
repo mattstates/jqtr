@@ -95,7 +95,6 @@ class App extends React.Component {
                         issues={this.state.issues}
                         appWidth={domEntryPoint.offsetWidth}
                         lampstrackUrl={lampstrackUrl}
-                        maxRows={this.state.issues ? this.state.issues.length : 0}
                     />
                 ));
         }
