@@ -25,9 +25,10 @@ class Table extends React.Component {
         this.viewSelector = this.viewSelector.bind(this);
 
         this.state = {
-            viewType: viewTypes.INITIATIVE,
             dataSet: this.props.issues,
-            rowCount: this.props.issues.length
+            rowCount: this.props.issues.length,
+            timeStamp: new Date().toLocaleString(),
+            viewType: viewTypes.INITIATIVE
         };
     }
 
@@ -200,7 +201,7 @@ class Table extends React.Component {
                                     </span>
                                 </React.Fragment>
                             ),
-                            Footer: new Date().toLocaleString(),
+                            Footer: this.state.timeStamp,
                             Header: titleCase(viewTypes.INITIATIVE),
                             id: 'taskTitle',
                             minWidth: parentWidth * 0.25,
@@ -290,7 +291,7 @@ class Table extends React.Component {
                             accessor: (data) => {
                                 return data[0];
                             },
-                            Footer: new Date().toLocaleString(),
+                            Footer: this.state.timeStamp,
                             Header: titleCase(viewTypes.ASSIGNEE),
                             id: 'taskTitle',
                             minWidth: parentWidth * 0.25,
