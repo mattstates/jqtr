@@ -44,7 +44,7 @@ class App extends React.Component {
             .then((jiraData) => {
                 window.location.hash = `jql=${window.encodeURIComponent(searchQuery)}`;
 
-                const issues = gatherAllTasks(jiraData.issues.map(mapToUsefulData), this.setState.bind(this));
+                const issues = gatherAllTasks(jiraData.issues.map(mapToUsefulData));
 
                 issues.then((formattedIssues) => {
                     this.setState({
