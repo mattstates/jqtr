@@ -3,30 +3,48 @@ import React from 'react';
 import ReactTable from 'react-table';
 import Status from './Status.jsx';
 import Time from './Time.jsx';
-import { titleCase } from '../../utils/utils.js';
 import { UNASSIGNED, NONE } from '../../utils/constants.js';
+import { titleCase } from '../../utils/utils.js';
 
 /*
 *   <Table /> Wraps the react-table component.
 *   Reference docs here: https://react-table.js.org/#/story/readme
 */
 const viewTypes = Object.freeze({
-    INITIATIVE: 'initiative',
-    ASSIGNEE: 'assignee'
+    ASSIGNEE: 'assignee',
+    INITIATIVE: 'initiative'
+});
+
+const columnTypes = Object.freeze({
+    INDEX: 'index',
+    RESOURCEGROUP: 'resourcegroup',
+    STATUS: 'status',
+    TOTALTIME: 'totaltime',
+    VIEWTYPE: 'viewtype'
 });
 
 class Table extends React.Component {
     constructor(props) {
         super(props);
+        // Methods
         this.alphabeticalSortPinnedValue = this.alphabeticalSortPinnedValue.bind(this);
+        this.getColumnWidthByType = this.getColumnWidthByType.bind(this);
         this.formatAssigneeView = this.formatAssigneeView.bind(this);
         this.sortByTime = this.sortByTime.bind(this);
         this.sortByTimeValueAssignment = this.sortByTimeValueAssignment.bind(this);
         this.viewSelector = this.viewSelector.bind(this);
 
+        // Properties
+        // totalResources is an object where the keys are the resource name and the values are agregated total time.
+        this.totalResources = this.resourceAccumulator(props.issues);
+        this.columnWidths = Object.entries(columnTypes).reduce((value, columnType) => {
+            value[columnType[1]] = this.getColumnWidthByType(columnType[1]);
+            return value;
+        }, {});
+
         this.state = {
-            dataSet: this.props.issues,
-            rowCount: this.props.issues.length,
+            dataSet: props.issues,
+            rowCount: props.issues.length,
             timeStamp: new Date().toLocaleString(),
             viewType: viewTypes.INITIATIVE
         };
@@ -64,7 +82,6 @@ class Table extends React.Component {
             if (task.omitFromJqtr) {
                 return totals;
             }
-
             if (totals[task.resourceQueue]) {
                 totals[task.resourceQueue] += task.timeProps.timeRemaining;
             } else {
@@ -135,7 +152,7 @@ class Table extends React.Component {
         ).sort((a, b) => this.alphabeticalSortPinnedValue(a, b, UNASSIGNED));
     }
 
-    formatDataByViewType(viewType) {
+    getDataByViewType(viewType) {
         switch (viewType) {
             case viewTypes.INITIATIVE:
                 return this.props.issues;
@@ -147,20 +164,38 @@ class Table extends React.Component {
     }
 
     viewSelector(viewType) {
-        const data = this.formatDataByViewType(viewType);
-        this.setState({ viewType: viewType, dataSet: data, rowCount: data.length });
+        const data = this.getDataByViewType(viewType);
+        this.setState({
+            dataSet: data,
+            rowCount: data.length,
+            viewType: viewType
+        });
+    }
+
+    getColumnWidthByType(columnType, totalWidth = this.props.appWidth) {
+        const resourceCount = Object.keys(this.totalResources).length;
+        const largeResourceList = resourceCount > 5;
+        switch (columnType) {
+            case columnTypes.INDEX:
+                return totalWidth * 0.03;
+            case columnTypes.RESOURCEGROUP:
+                return totalWidth * (largeResourceList ? 0.5 : 0.4) / resourceCount;
+            case columnTypes.STATUS:
+                return totalWidth * 0.1;
+            case columnTypes.TOTALTIME:
+                return totalWidth * 0.06;
+            case columnTypes.VIEWTYPE:
+                return totalWidth * (largeResourceList ? 0.3 : 0.4);
+            default:
+                return undefined;
+        }
     }
 
     render() {
         // This block dynamically adds table columns for resources that are returned from the response.
         if (this.state.dataSet.length) {
-            const minWidth = 75;
-            const parentWidth = this.props.appWidth;
-            // totalResources is an object where the keys are the resource name and the values are agregated total time.
-            const totalResources = this.resourceAccumulator(this.props.issues);
-
             // 2D array of [...[resourceQueue, total]]
-            const sortedResourceList = Object.entries(totalResources).sort(this.alphabeticalSortPinnedValue);
+            const sortedResourceList = Object.entries(this.totalResources).sort(this.alphabeticalSortPinnedValue);
 
             // React-Table Columns: Index, Task Name, Total Time Remaining, [Dynamic Resource Queue Time Remaining]
 
@@ -186,7 +221,7 @@ class Table extends React.Component {
                             id: 'index',
                             sortable: false,
                             style: { textAlign: 'center', pointerEvents: 'none' },
-                            width: 32
+                            width: this.columnWidths[columnTypes.INDEX]
                         },
                         {
                             // INITIATIVES
@@ -204,7 +239,7 @@ class Table extends React.Component {
                             Footer: this.state.timeStamp,
                             Header: titleCase(viewTypes.INITIATIVE),
                             id: 'taskTitle',
-                            minWidth: parentWidth * 0.25,
+                            minWidth: this.columnWidths[columnTypes.VIEWTYPE],
                             sortMethod: (aVal, bVal) => {
                                 const a = aVal.key.split('-');
                                 const b = bVal.key.split('-');
@@ -221,7 +256,7 @@ class Table extends React.Component {
                             Cell: (props) => (props.original.subtasks.length ? null : <Status info={props} />),
                             Footer: '',
                             Header: 'Status',
-                            maxWidth: parentWidth * 0.1,
+                            maxWidth: this.columnWidths[columnTypes.STATUS],
                             style: { cursor: 'default' }
                         },
                         {
@@ -234,7 +269,7 @@ class Table extends React.Component {
                             Footer: () => {
                                 return (
                                     <Time
-                                        time={Object.values(totalResources).reduce((total, resourceTime) => {
+                                        time={Object.values(this.totalResources).reduce((total, resourceTime) => {
                                             return total + resourceTime;
                                         }, 0)}
                                     />
@@ -242,7 +277,7 @@ class Table extends React.Component {
                             },
                             Header: 'Total Time Remaining',
                             id: 'timeRemaining',
-                            maxWidth: parentWidth * 0.09,
+                            minWidth: this.columnWidths[columnTypes.TOTALTIME],
                             sortMethod: this.sortByTime
                         },
                         // Spread resource-based time columns into columns list.
@@ -253,13 +288,8 @@ class Table extends React.Component {
                                 Footer: <Time time={resource[1] || 0} />,
                                 Header: resource[0],
                                 id: resource[0],
-                                minWidth: minWidth,
-                                sortMethod: this.sortByTime,
-                                // TODO: Extract this logic since it is also used in the subtable.
-                                width: ((headerLength) => {
-                                    // Attempting to have dynamic widths for columns.
-                                    return headerLength < minWidth ? minWidth : headerLength;
-                                })(resource[0].length * 8)
+                                maxWidth: this.columnWidths[columnTypes.RESOURCEGROUP],
+                                sortMethod: this.sortByTime
                             };
                         })
                     ];
@@ -284,7 +314,7 @@ class Table extends React.Component {
                             id: 'index',
                             sortable: false,
                             style: { textAlign: 'center', pointerEvents: 'none' },
-                            width: 32
+                            width: this.columnWidths[columnTypes.INDEX]
                         },
                         {
                             // ASSIGNEE
@@ -294,7 +324,7 @@ class Table extends React.Component {
                             Footer: this.state.timeStamp,
                             Header: titleCase(viewTypes.ASSIGNEE),
                             id: 'taskTitle',
-                            minWidth: parentWidth * 0.25,
+                            minWidth: this.columnWidths[columnTypes.VIEWTYPE],
                             sortable: false,
                             style: { minHeight: 45 }
                         },
@@ -303,7 +333,7 @@ class Table extends React.Component {
                             accessor: 'status',
                             Footer: '',
                             Header: 'Status',
-                            maxWidth: parentWidth * 0.1,
+                            maxWidth: this.columnWidths[columnTypes.STATUS],
                             style: { cursor: 'default' }
                         },
                         {
@@ -317,7 +347,7 @@ class Table extends React.Component {
                             Footer: () => {
                                 return (
                                     <Time
-                                        time={Object.values(totalResources).reduce((total, resourceTime) => {
+                                        time={Object.values(this.totalResources).reduce((total, resourceTime) => {
                                             return total + resourceTime;
                                         }, 0)}
                                     />
@@ -325,7 +355,7 @@ class Table extends React.Component {
                             },
                             Header: 'Total Time Remaining',
                             id: 'timeRemaining',
-                            maxWidth: parentWidth * 0.09,
+                            minWidth: this.columnWidths[columnTypes.TOTALTIME],
                             sortMethod: this.sortByTime
                         },
                         // Spread resource-based time columns into columns list.
@@ -349,13 +379,8 @@ class Table extends React.Component {
                                 Footer: <Time time={resource[1] || 0} />,
                                 Header: resource[0],
                                 id: resource[0],
-                                minWidth: minWidth,
-                                sortMethod: this.sortByTime,
-                                // TODO: Extract this logic since it is also used in the subtable.
-                                width: ((headerLength) => {
-                                    // Attempting to have dynamic widths for columns.
-                                    return headerLength < minWidth ? minWidth : headerLength;
-                                })(resource[0].length * 8)
+                                maxWidth: this.columnWidths[columnTypes.RESOURCEGROUP],
+                                sortMethod: this.sortByTime
                             };
                         })
                     ];
@@ -380,8 +405,8 @@ class Table extends React.Component {
                                         data={this.dropDownTableInitiativeViewData(row)}
                                         appWidth={this.props.appWidth}
                                         resourceList={sortedResourceList}
-                                        minWidth={minWidth}
                                         lampstrackUrl={this.props.lampstrackUrl}
+                                        columnWidths={this.columnWidths}
                                     />
                                 );
                             case viewTypes.ASSIGNEE:
@@ -390,8 +415,8 @@ class Table extends React.Component {
                                         data={this.dropDownTableAssigneeViewData(row.original[1])}
                                         appWidth={this.props.appWidth}
                                         resourceList={sortedResourceList}
-                                        minWidth={minWidth}
                                         lampstrackUrl={this.props.lampstrackUrl}
+                                        columnWidths={this.columnWidths}
                                     />
                                 );
                             default:
@@ -414,18 +439,13 @@ class Table extends React.Component {
 }
 
 function SubTable(props) {
-    const parentWidth = props.appWidth;
-    const minWidth = props.minWidth;
-
-    // TODO: Refactor widths and heights so these setting are passed in from the parent.
     const columns = [
         {
             // PLACEHOLDER - KEEPS COLUMNS ALIGNED.
-            // TODO: Turn width into a variable and pass it in here from the parent.
             accessor: 'null',
             id: 'null',
             sortable: false,
-            width: 32
+            width: props.columnWidths[columnTypes.INDEX]
         },
         {
             // INITIATIVE
@@ -441,22 +461,22 @@ function SubTable(props) {
                 </React.Fragment>
             ),
             id: 'taskTitle',
-            minWidth: parentWidth * 0.25,
+            minWidth: props.columnWidths[columnTypes.VIEWTYPE],
             style: { minHeight: 45 }
         },
         {
             // STATUS
             Cell: (props) => <Status info={props} />,
             accessor: 'status',
-            maxWidth: parentWidth * 0.1,
+            maxWidth: props.columnWidths[columnTypes.STATUS],
             style: { cursor: 'default' }
         },
 
         {
-            // PLACEHOLDER - KEEPS COLUMNS ALIGNED.
+            // TOTAL TIME PLACEHOLDER - KEEPS COLUMNS ALIGNED.
             accessor: 'null',
             id: 'null',
-            maxWidth: parentWidth * 0.09,
+            minWidth: props.columnWidths[columnTypes.TOTALTIME],
             sortable: false
         },
 
@@ -471,14 +491,8 @@ function SubTable(props) {
                     return '';
                 },
                 Cell: (props) => <Time time={props.value} test={props} />,
-
                 id: resource[0],
-                minWidth: minWidth,
-                width: ((headerLength) => {
-                    // Attempting to have dynamic widths for columns.
-                    // TODO: Extract this into a function now that it is used in more than one place.
-                    return headerLength < minWidth ? minWidth : headerLength;
-                })(resource[0].length * 8)
+                maxWidth: props.columnWidths[columnTypes.RESOURCEGROUP]
             };
         })
     ];
