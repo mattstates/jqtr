@@ -2,27 +2,16 @@ import Error from '../Error.jsx';
 import React from 'react';
 import ReactTable from 'react-table';
 import Status from './Status.jsx';
+import SubTable from './SubTable.jsx';
 import Time from './Time.jsx';
-import { UNASSIGNED, NONE } from '../../utils/constants.js';
-import { titleCase } from '../../utils/utils.js';
+import ViewSelector from './ViewSelector.jsx';
+import { COLUMN_TYPES, NONE, UNASSIGNED, VIEW_TYPES } from '../../utils/constants.js';
+import { storageAvailable, titleCase } from '../../utils/utils.js';
 
-/*
-*   <Table /> Wraps the react-table component.
-*   Reference docs here: https://react-table.js.org/#/story/readme
-*/
-const viewTypes = Object.freeze({
-    ASSIGNEE: 'assignee',
-    INITIATIVE: 'initiative'
-});
-
-const columnTypes = Object.freeze({
-    INDEX: 'index',
-    RESOURCEGROUP: 'resourcegroup',
-    STATUS: 'status',
-    TOTALTIME: 'totaltime',
-    VIEWTYPE: 'viewtype'
-});
-
+/**
+ * <Table /> Wraps the react-table component.
+ * Reference docs here: https://react-table.js.org/#/story/readme
+ */
 class Table extends React.Component {
     constructor(props) {
         super(props);
@@ -30,41 +19,45 @@ class Table extends React.Component {
         this.alphabeticalSortPinnedValue = this.alphabeticalSortPinnedValue.bind(this);
         this.getColumnWidthByType = this.getColumnWidthByType.bind(this);
         this.formatAssigneeView = this.formatAssigneeView.bind(this);
+        this.formatSubTableDataByViewType = this.formatSubTableDataByViewType.bind(this);
+        this.sortByTaskNumber = this.sortByTaskNumber.bind(this);
         this.sortByTime = this.sortByTime.bind(this);
-        this.sortByTimeValueAssignment = this.sortByTimeValueAssignment.bind(this);
-        this.viewSelector = this.viewSelector.bind(this);
+        this.updateStateByViewType = this.updateStateByViewType.bind(this);
+        this.viewSelector = this.updateStateByViewType.bind(this);
 
         // Properties
-        // totalResources is an object where the keys are the resource name and the values are agregated total time.
-        this.totalResources = this.resourceAccumulator(props.issues);
-        this.columnWidths = Object.entries(columnTypes).reduce((value, columnType) => {
-            value[columnType[1]] = this.getColumnWidthByType(columnType[1]);
-            return value;
-        }, {});
+        // totalResources is an object where the keys are the resource name and the values are aggregated total time.
+        this.totalResources = Object.freeze(this.resourceAccumulator(props.issues));
+        this.columnWidths = Object.freeze(
+            Object.values(COLUMN_TYPES).reduce((values, columnType) => {
+                values[columnType] = this.getColumnWidthByType(columnType);
+                return values;
+            }, {})
+        );
 
         this.state = {
             dataSet: props.issues,
             rowCount: props.issues.length,
             timeStamp: new Date().toLocaleString(),
-            viewType: viewTypes.INITIATIVE
+            viewType: VIEW_TYPES.INITIATIVE
         };
     }
 
-    sortByTimeValueAssignment(value) {
-        switch (typeof value) {
-            // no task meets this criteria
-            case 'undefined':
-                return -6;
-            // value is already a react component
-            case 'object':
-                return -5;
-            // empty string
-            case 'string':
-                return -4;
-            // null or a number
-            default:
-                return value;
+    componentDidMount() {
+        // Get initial state for viewType from localStorage if it exists.
+        let initialViewType;
+        if (
+            storageAvailable &&
+            window.localStorage.lpTimeRemainingViewType &&
+            Object.values(VIEW_TYPES).some((viewType) => viewType === window.localStorage.lpTimeRemainingViewType)
+        ) {
+            initialViewType = window.localStorage.lpTimeRemainingViewType;
+        } else {
+            initialViewType = VIEW_TYPES.INITIATIVE;
         }
+
+        // Set initial state.
+        this.updateStateByViewType(initialViewType);
     }
 
     /**
@@ -91,26 +84,62 @@ class Table extends React.Component {
         }, {});
     }
 
-    /*
-    * descending order would be:
-    * Highest Numerical Value > Needs Estimate (React Component) > No Task
-    */
-    sortByTime(aVal, bVal) {
-        const a = this.sortByTimeValueAssignment(aVal);
-        const b = this.sortByTimeValueAssignment(bVal);
+    /**
+     * Sort callback method to sort by time.
+     * Descending order would be:
+     * Highest Numerical Value > Needs Estimate (React Component) that shows WARNING_SYMBOL > No Tasks (empty cell)
+     * @param {varies} a
+     * @param {varies} b
+     */
+    sortByTime(a, b) {
+        const [aValue, bValue] = [a, b].map((value) => {
+            switch (typeof value) {
+                // no task meets this criteria
+                case 'undefined':
+                    return -6;
+                // value is already a react component
+                case 'object':
+                    return -5;
+                // empty string
+                case 'string':
+                    return -4;
+                // null or a number
+                default:
+                    return value;
+            }
+        });
 
-        if (a < b) {
+        if (aValue < bValue) {
             return 1;
         }
-        if (a > b) {
+        if (aValue > bValue) {
             return -1;
         }
         return 0;
     }
 
     /**
+     * Sort callback method. Sorts Ascending by Project Type (LP, DBA, PSS, etc.) alphabetically then numerically by task number.
+     * @param {String} a
+     * @param {String} b
+     */
+    sortByTaskNumber(a, b) {
+        const [aProject, aTaskNumber] = a.split('-');
+        const [bProject, bTaskNumber] = b.split('-');
+        if (aProject === bProject) {
+            return Number(aTaskNumber) - Number(bTaskNumber);
+        }
+        if (aProject < bProject) {
+            return -1;
+        }
+        if (aProject > bProject) {
+            return 1;
+        }
+    }
+
+    /**
      * Alphabetically sorts a 2d array by the first element of each child array.
-     * Pinned value will be arranged before "A"
+     * Pinned value will be arranged before "A". --Use in Array.sort callback.
      * @param {Array} a - zeroeth element as a string.
      * @param {Array} b - zeroeth element as a string.
      * @param {String} pinnedValue [Optional] string to pin to the top of the sort order.
@@ -143,48 +172,65 @@ class Table extends React.Component {
         return Object.entries(
             allTasks.reduce((assignees, task) => {
                 let name = task.assignee.name
-                    .replace(/"/g, '')
+                    .replace(/"/g, '') // Some assignee's have quotes and spaces around their names... O_o.
                     .trim()
-                    .replace(/None/i, UNASSIGNED);
+                    .replace(/None/i, UNASSIGNED); // 'None' is the official Jira value for an unassigned user.
                 assignees[name] ? assignees[name].push(task) : (assignees[name] = [task]);
                 return assignees;
             }, {})
         ).sort((a, b) => this.alphabeticalSortPinnedValue(a, b, UNASSIGNED));
     }
 
-    getDataByViewType(viewType) {
-        switch (viewType) {
-            case viewTypes.INITIATIVE:
-                return this.props.issues;
-            case viewTypes.ASSIGNEE:
-                return this.formatAssigneeView(this.props.issues);
-            default:
-                return this.props.issues;
-        }
-    }
+    updateStateByViewType(view) {
+        let data;
+        let viewType;
 
-    viewSelector(viewType) {
-        const data = this.getDataByViewType(viewType);
+        switch (view) {
+            case VIEW_TYPES.INITIATIVE:
+                data = this.props.issues.sort((a, b) => this.sortByTaskNumber(a.taskNumber, b.taskNumber));
+                viewType = view;
+                break;
+            case VIEW_TYPES.ASSIGNEE:
+                data = this.formatAssigneeView(this.props.issues);
+                viewType = view;
+                break;
+            default:
+                data = this.state.dataSet;
+                viewType = this.state.viewType;
+        }
         this.setState({
             dataSet: data,
             rowCount: data.length,
             viewType: viewType
         });
+
+        // Store the viewType in localStorage for future page views.
+        if (storageAvailable) {
+            window.localStorage.lpTimeRemainingViewType = viewType;
+        }
     }
 
+    /**
+     * Assigns values to be used for each column type in the table.
+     * Since there are a dynamic number of resourceQueues (Back End, Front End, QA, etc.)
+     * this method will generate some ballpark numbers to be passed into the column objects for width.
+     * returns a Number.
+     * @param {String} columnType - must be a value from COLUMN_TYPES constant
+     * @param {Number} totalWidth - should be the application width.
+     */
     getColumnWidthByType(columnType, totalWidth = this.props.appWidth) {
         const resourceCount = Object.keys(this.totalResources).length;
-        const largeResourceList = resourceCount > 5;
+        const largeResourceList = resourceCount > 4;
         switch (columnType) {
-            case columnTypes.INDEX:
+            case COLUMN_TYPES.INDEX:
                 return totalWidth * 0.03;
-            case columnTypes.RESOURCEGROUP:
+            case COLUMN_TYPES.RESOURCEGROUP:
                 return totalWidth * (largeResourceList ? 0.5 : 0.4) / resourceCount;
-            case columnTypes.STATUS:
+            case COLUMN_TYPES.STATUS:
                 return totalWidth * 0.1;
-            case columnTypes.TOTALTIME:
+            case COLUMN_TYPES.TOTALTIME:
                 return totalWidth * 0.06;
-            case columnTypes.VIEWTYPE:
+            case COLUMN_TYPES.VIEWTYPE:
                 return totalWidth * (largeResourceList ? 0.3 : 0.4);
             default:
                 return undefined;
@@ -192,16 +238,14 @@ class Table extends React.Component {
     }
 
     render() {
-        // This block dynamically adds table columns for resources that are returned from the response.
         if (this.state.dataSet.length) {
             // 2D array of [...[resourceQueue, total]]
             const sortedResourceList = Object.entries(this.totalResources).sort(this.alphabeticalSortPinnedValue);
 
             // React-Table Columns: Index, Task Name, Total Time Remaining, [Dynamic Resource Queue Time Remaining]
-
             let columns;
             switch (this.state.viewType) {
-                case viewTypes.INITIATIVE:
+                case VIEW_TYPES.INITIATIVE:
                     columns = [
                         {
                             // INDEX & EXPANDER INFO
@@ -216,12 +260,18 @@ class Table extends React.Component {
                                 return <div className={classes.join(' ')}>{viewIndex + 1}</div>;
                             },
                             Header: (data) => {
-                                return <ViewSelector currentView={this.state.viewType} views={Object.values(viewTypes)} clickHandler={this.viewSelector} />;
+                                return (
+                                    <ViewSelector
+                                        currentView={this.state.viewType}
+                                        views={Object.values(VIEW_TYPES)}
+                                        clickHandler={this.updateStateByViewType}
+                                    />
+                                );
                             },
                             id: 'index',
                             sortable: false,
                             style: { textAlign: 'center', pointerEvents: 'none' },
-                            width: this.columnWidths[columnTypes.INDEX]
+                            width: this.columnWidths[COLUMN_TYPES.INDEX]
                         },
                         {
                             // INITIATIVES
@@ -237,17 +287,10 @@ class Table extends React.Component {
                                 </React.Fragment>
                             ),
                             Footer: this.state.timeStamp,
-                            Header: titleCase(viewTypes.INITIATIVE),
+                            Header: titleCase(VIEW_TYPES.INITIATIVE),
                             id: 'taskTitle',
-                            minWidth: this.columnWidths[columnTypes.VIEWTYPE],
-                            sortMethod: (aVal, bVal) => {
-                                const a = aVal.key.split('-');
-                                const b = bVal.key.split('-');
-                                if (a[0] === b[0]) {
-                                    return Number(b[1]) - Number(a[1]);
-                                }
-                                return b[0] - a[0];
-                            },
+                            minWidth: this.columnWidths[COLUMN_TYPES.VIEWTYPE],
+                            sortMethod: (a, b) => this.sortByTaskNumber(a.key, b.key),
                             style: { minHeight: 45 }
                         },
                         {
@@ -256,7 +299,7 @@ class Table extends React.Component {
                             Cell: (props) => (props.original.subtasks.length ? null : <Status info={props} />),
                             Footer: '',
                             Header: 'Status',
-                            maxWidth: this.columnWidths[columnTypes.STATUS],
+                            maxWidth: this.columnWidths[COLUMN_TYPES.STATUS],
                             style: { cursor: 'default' }
                         },
                         {
@@ -277,7 +320,7 @@ class Table extends React.Component {
                             },
                             Header: 'Total Time Remaining',
                             id: 'timeRemaining',
-                            minWidth: this.columnWidths[columnTypes.TOTALTIME],
+                            minWidth: this.columnWidths[COLUMN_TYPES.TOTALTIME],
                             sortMethod: this.sortByTime
                         },
                         // Spread resource-based time columns into columns list.
@@ -288,13 +331,13 @@ class Table extends React.Component {
                                 Footer: <Time time={resource[1] || 0} />,
                                 Header: resource[0],
                                 id: resource[0],
-                                maxWidth: this.columnWidths[columnTypes.RESOURCEGROUP],
+                                maxWidth: this.columnWidths[COLUMN_TYPES.RESOURCEGROUP],
                                 sortMethod: this.sortByTime
                             };
                         })
                     ];
                     break;
-                case viewTypes.ASSIGNEE:
+                case VIEW_TYPES.ASSIGNEE:
                     columns = [
                         {
                             // INDEX & EXPANDER INFO
@@ -309,12 +352,18 @@ class Table extends React.Component {
                                 return <div className={classes.join(' ')}>{viewIndex + 1}</div>;
                             },
                             Header: () => {
-                                return <ViewSelector currentView={this.state.viewType} views={Object.values(viewTypes)} clickHandler={this.viewSelector} />;
+                                return (
+                                    <ViewSelector
+                                        currentView={this.state.viewType}
+                                        views={Object.values(VIEW_TYPES)}
+                                        clickHandler={this.updateStateByViewType}
+                                    />
+                                );
                             },
                             id: 'index',
                             sortable: false,
                             style: { textAlign: 'center', pointerEvents: 'none' },
-                            width: this.columnWidths[columnTypes.INDEX]
+                            width: this.columnWidths[COLUMN_TYPES.INDEX]
                         },
                         {
                             // ASSIGNEE
@@ -322,9 +371,9 @@ class Table extends React.Component {
                                 return data[0];
                             },
                             Footer: this.state.timeStamp,
-                            Header: titleCase(viewTypes.ASSIGNEE),
+                            Header: titleCase(VIEW_TYPES.ASSIGNEE),
                             id: 'taskTitle',
-                            minWidth: this.columnWidths[columnTypes.VIEWTYPE],
+                            minWidth: this.columnWidths[COLUMN_TYPES.VIEWTYPE],
                             sortable: false,
                             style: { minHeight: 45 }
                         },
@@ -333,7 +382,7 @@ class Table extends React.Component {
                             accessor: 'status',
                             Footer: '',
                             Header: 'Status',
-                            maxWidth: this.columnWidths[columnTypes.STATUS],
+                            maxWidth: this.columnWidths[COLUMN_TYPES.STATUS],
                             style: { cursor: 'default' }
                         },
                         {
@@ -355,7 +404,7 @@ class Table extends React.Component {
                             },
                             Header: 'Total Time Remaining',
                             id: 'timeRemaining',
-                            minWidth: this.columnWidths[columnTypes.TOTALTIME],
+                            minWidth: this.columnWidths[COLUMN_TYPES.TOTALTIME],
                             sortMethod: this.sortByTime
                         },
                         // Spread resource-based time columns into columns list.
@@ -374,12 +423,12 @@ class Table extends React.Component {
                                     const warning = props.original[1].some((task) => {
                                         return task.timeProps.needsEstimate && task.resourceQueue === resource[0];
                                     });
-                                    return <Time className={warning} warning={warning} time={props.value} />;
+                                    return <Time warning={warning} time={props.value} />;
                                 },
                                 Footer: <Time time={resource[1] || 0} />,
                                 Header: resource[0],
                                 id: resource[0],
-                                maxWidth: this.columnWidths[columnTypes.RESOURCEGROUP],
+                                maxWidth: this.columnWidths[COLUMN_TYPES.RESOURCEGROUP],
                                 sortMethod: this.sortByTime
                             };
                         })
@@ -399,20 +448,20 @@ class Table extends React.Component {
                     className="-striped"
                     SubComponent={(row) => {
                         switch (this.state.viewType) {
-                            case viewTypes.INITIATIVE:
+                            case VIEW_TYPES.INITIATIVE:
                                 return (
                                     <SubTable
-                                        data={this.dropDownTableInitiativeViewData(row)}
+                                        data={this.formatSubTableDataByViewType(VIEW_TYPES.INITIATIVE, row)}
                                         appWidth={this.props.appWidth}
                                         resourceList={sortedResourceList}
                                         lampstrackUrl={this.props.lampstrackUrl}
                                         columnWidths={this.columnWidths}
                                     />
                                 );
-                            case viewTypes.ASSIGNEE:
+                            case VIEW_TYPES.ASSIGNEE:
                                 return (
                                     <SubTable
-                                        data={this.dropDownTableAssigneeViewData(row.original[1])}
+                                        data={this.formatSubTableDataByViewType(VIEW_TYPES.ASSIGNEE, row.original[1])}
                                         appWidth={this.props.appWidth}
                                         resourceList={sortedResourceList}
                                         lampstrackUrl={this.props.lampstrackUrl}
@@ -430,101 +479,17 @@ class Table extends React.Component {
         return <Error />;
     }
 
-    dropDownTableInitiativeViewData(rowInfo) {
-        return [...rowInfo.original.subtasks, rowInfo.original].filter((task) => !task.omitFromJqtr).sort((a, b) => Number(a.id) - Number(b.id));
+    formatSubTableDataByViewType(viewType, rowInfo) {
+        switch (viewType) {
+            case VIEW_TYPES.INITIATIVE:
+                return [...rowInfo.original.subtasks, rowInfo.original].filter((task) => !task.omitFromJqtr).sort((a, b) => Number(a.id) - Number(b.id));
+            case VIEW_TYPES.ASSIGNEE:
+                return rowInfo.filter((task) => !task.omitFromJqtr).sort((a, b) => Number(a.id) - Number(b.id));
+            default:
+                console.error('Unsupported View Type Passed to Sub Table Data.');
+                return undefined;
+        }
     }
-    dropDownTableAssigneeViewData(rowInfo) {
-        return rowInfo.filter((task) => !task.omitFromJqtr).sort((a, b) => Number(a.id) - Number(b.id));
-    }
-}
-
-function SubTable(props) {
-    const columns = [
-        {
-            // PLACEHOLDER - KEEPS COLUMNS ALIGNED.
-            accessor: 'null',
-            id: 'null',
-            sortable: false,
-            width: props.columnWidths[columnTypes.INDEX]
-        },
-        {
-            // INITIATIVE
-            accessor: (data) => (
-                <React.Fragment>
-                    <span className="initiative">
-                        <span>
-                            {data.taskNumber}
-                            {': '}
-                        </span>
-                        <a href={`${props.lampstrackUrl}${data.taskNumber}`}>{data.taskTitle}</a>
-                    </span>
-                </React.Fragment>
-            ),
-            id: 'taskTitle',
-            minWidth: props.columnWidths[columnTypes.VIEWTYPE],
-            style: { minHeight: 45 }
-        },
-        {
-            // STATUS
-            Cell: (props) => <Status info={props} />,
-            accessor: 'status',
-            maxWidth: props.columnWidths[columnTypes.STATUS],
-            style: { cursor: 'default' }
-        },
-
-        {
-            // TOTAL TIME PLACEHOLDER - KEEPS COLUMNS ALIGNED.
-            accessor: 'null',
-            id: 'null',
-            minWidth: props.columnWidths[columnTypes.TOTALTIME],
-            sortable: false
-        },
-
-        ...props.resourceList.map((resource) => {
-            return {
-                accessor: (data) => {
-                    if (data.resourceQueue === resource[0] && !data.timeProps.needsEstimate) {
-                        return data.timeProps.timeEstimate;
-                    } else if (data.resourceQueue === resource[0] && data.timeProps.needsEstimate) {
-                        return null;
-                    }
-                    return '';
-                },
-                Cell: (props) => <Time time={props.value} test={props} />,
-                id: resource[0],
-                maxWidth: props.columnWidths[columnTypes.RESOURCEGROUP]
-            };
-        })
-    ];
-
-    return props.data.length ? (
-        <ReactTable
-            data={props.data}
-            columns={columns}
-            showPaginationBottom={false}
-            showPageSizeOptions={false}
-            defaultPageSize={props.data.length}
-            className="-striped subtable"
-            resizable={false}
-        />
-    ) : null;
-}
-
-function ViewSelector(props) {
-    return (
-        <div className="viewSelector">
-            {props.views.map((view, index) => {
-                return (
-                    <div
-                        key={index}
-                        className={`${view}${props.currentView === view ? ' disabled' : ''}`}
-                        title={`${titleCase(view)} View`}
-                        onClick={props.clickHandler.bind(null, view)}
-                    />
-                );
-            })}
-        </div>
-    );
 }
 
 export default Table;

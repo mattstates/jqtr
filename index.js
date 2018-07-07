@@ -4,7 +4,8 @@ import Error from './Components/Error.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Table from './Components/Table/Table.jsx';
-import { mapToUsefulData, gatherAllTasks, storageAvailable, lampstrackUrl, jiraApiUrl } from './utils/utils.js';
+import { storageAvailable } from './utils/utils.js';
+import { mapToUsefulData, gatherAllTasks, lampstrackUrl, jiraApiUrl } from './utils/apiUtils.js';
 
 const domEntryPoint = document.getElementById('jqtrapp');
 
@@ -16,7 +17,6 @@ class App extends React.Component {
             input: '',
             loading: true,
             hasError: false,
-            hasWarning: false,
             notification: {
                 message: '',
                 items: []
@@ -31,7 +31,6 @@ class App extends React.Component {
         this.setState({
             loading: true,
             hasError: false,
-            hasWarning: false,
             notification: { message: '', items: [] }
         });
 
@@ -88,28 +87,17 @@ class App extends React.Component {
         if (this.state.hasError) {
             renderComponent = <Error message={this.state.notification.message} />;
         } else {
-            this.state.loading ?
-                (renderComponent = <div className="loader" />) :
-                (renderComponent = (
-                    <Table
-                        issues={this.state.issues}
-                        appWidth={domEntryPoint.offsetWidth}
-                        lampstrackUrl={lampstrackUrl}
-                    />
-                ));
+            renderComponent = this.state.loading ? (
+                <div className="loader" />
+            ) : (
+                <Table issues={this.state.issues} appWidth={domEntryPoint.offsetWidth} lampstrackUrl={lampstrackUrl} />
+            );
         }
 
         return (
             <React.Fragment>
                 <input type="text" value={this.state.input} onChange={this.changeHandler} onKeyUp={this.submit} />
-
                 {renderComponent}
-
-                {this.state.hasWarning && this.state.notification.message ? (
-                    <Error type={'Warning'} message={this.state.notification.message} items={this.state.notification.items} classNames={['warning']} />
-                ) : (
-                    ''
-                )}
             </React.Fragment>
         );
     }
