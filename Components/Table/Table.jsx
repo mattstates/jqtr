@@ -227,9 +227,9 @@ class Table extends React.Component {
             case COLUMN_TYPES.RESOURCEGROUP:
                 return totalWidth * (largeResourceList ? 0.5 : 0.4) / resourceCount;
             case COLUMN_TYPES.STATUS:
-                return totalWidth * 0.1;
+                return totalWidth * 0.125;
             case COLUMN_TYPES.TOTALTIME:
-                return totalWidth * 0.06;
+                return totalWidth * 0.05;
             case COLUMN_TYPES.VIEWTYPE:
                 return totalWidth * (largeResourceList ? 0.3 : 0.4);
             default:
@@ -327,7 +327,7 @@ class Table extends React.Component {
                         ...sortedResourceList.map((resource) => {
                             return {
                                 accessor: (data) => this.resourceAccumulator([data])[resource[0]],
-                                Cell: (props) => <Time time={props.value} />,
+                                Cell: (props) => <Time time={props.value} assignee={props.original.subtasks.length < 1 ? props.original.assignee : null} />,
                                 Footer: <Time time={resource[1] || 0} />,
                                 Header: resource[0],
                                 id: resource[0],

@@ -58,7 +58,7 @@ export default (props) => {
                     }
                     return '';
                 },
-                Cell: (props) => <Time time={props.value} test={props} />,
+                Cell: (props) => <Time time={props.value} assignee={props.original.assignee} />,
                 id: resource[0],
                 maxWidth: props.columnWidths[COLUMN_TYPES.RESOURCEGROUP]
             };
