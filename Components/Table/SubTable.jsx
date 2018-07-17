@@ -2,9 +2,10 @@ import React from 'react';
 import ReactTable from 'react-table';
 import Status from './Status.jsx';
 import Time from './Time.jsx';
-import { COLUMN_TYPES } from '../../utils/constants.js';
+import { COLUMN_TYPES, VIEW_TYPES } from '../../utils/constants.js';
 
 export default (props) => {
+    const {viewType} = props;
     const columns = [
         {
             // PLACEHOLDER - KEEPS COLUMNS ALIGNED.
@@ -58,7 +59,7 @@ export default (props) => {
                     }
                     return '';
                 },
-                Cell: (props) => <Time time={props.value} assignee={props.original.assignee} />,
+                Cell: (props) => <Time time={props.value} assignee={viewType === VIEW_TYPES.INITIATIVE ? props.original.assignee : null} />,
                 id: resource[0],
                 maxWidth: props.columnWidths[COLUMN_TYPES.RESOURCEGROUP]
             };
