@@ -374,7 +374,6 @@ class Table extends React.Component {
                             Header: titleCase(VIEW_TYPES.ASSIGNEE),
                             id: 'taskTitle',
                             minWidth: this.columnWidths[COLUMN_TYPES.VIEWTYPE],
-                            sortable: false,
                             style: { minHeight: 45 }
                         },
                         {
@@ -456,6 +455,7 @@ class Table extends React.Component {
                                         resourceList={sortedResourceList}
                                         lampstrackUrl={this.props.lampstrackUrl}
                                         columnWidths={this.columnWidths}
+                                        viewType={VIEW_TYPES.INITIATIVE}
                                     />
                                 );
                             case VIEW_TYPES.ASSIGNEE:
@@ -466,6 +466,7 @@ class Table extends React.Component {
                                         resourceList={sortedResourceList}
                                         lampstrackUrl={this.props.lampstrackUrl}
                                         columnWidths={this.columnWidths}
+                                        viewType={VIEW_TYPES.ASSIGNEE}
                                     />
                                 );
                             default:
