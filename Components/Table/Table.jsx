@@ -296,7 +296,7 @@ class Table extends React.Component {
                         {
                             // STATUS
                             accessor: 'status',
-                            Cell: (props) => (props.original.subtasks.length ? null : <Status info={props} />),
+                            Cell: (props) => props.original.omitFromJqtr ? null : <Status info={props} />,
                             Footer: '',
                             Header: 'Status',
                             maxWidth: this.columnWidths[COLUMN_TYPES.STATUS],
