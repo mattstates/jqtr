@@ -92,7 +92,7 @@
         flex-direction: column;
         div.disabled { pointer-events: none; }
         div.initiative:before { content: '💡' }
-        div.assignee:before { content: '👥' }
+        div.assignee:before { content: '👷' }
     }
 
     .expandedEnabled {
