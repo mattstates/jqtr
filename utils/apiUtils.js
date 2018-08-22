@@ -19,7 +19,10 @@ function mapToUsefulData(issue) {
             Type, Priority, Affects Version, Component, Labels, Resource Queue, P4 Job, Failed QA, Failed Code Review,
             Epic Link, Sprint, Status, Resolution, Fix Version
         */
-        issueType: fields.issuetype.name,
+        issueType: {
+            name: fields.issuetype.name,
+            iconUrl: fields.issuetype.iconUrl
+        },
         // TODO: priority?
         // TODO: affectsVersion?
         components: fields.components ?
