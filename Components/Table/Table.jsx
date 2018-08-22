@@ -278,6 +278,7 @@ class Table extends React.Component {
                             accessor: (data) => (
                                 <React.Fragment key={data.taskNumber}>
                                     <span className="initiative">
+                                        <img src={data.issueType.iconUrl} title={data.issueType.name} />
                                         <span>
                                             {data.taskNumber}
                                             {': '}
@@ -296,7 +297,7 @@ class Table extends React.Component {
                         {
                             // STATUS
                             accessor: 'status',
-                            Cell: (props) => props.original.omitFromJqtr ? null : <Status info={props} />,
+                            Cell: (props) => (props.original.omitFromJqtr ? null : <Status info={props} />),
                             Footer: '',
                             Header: 'Status',
                             maxWidth: this.columnWidths[COLUMN_TYPES.STATUS],

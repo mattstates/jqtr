@@ -61,6 +61,12 @@
         width: 100%;
     }
 
+    span.initiative {
+        align-items: center;
+        display: flex;
+        span { margin: 0 6px; min-width: fit-content; }
+    }
+
     .status {
         display: flex;
         flex-direction: column;
