@@ -20,6 +20,7 @@ class Table extends React.Component {
         this.getColumnWidthByType = this.getColumnWidthByType.bind(this);
         this.formatAssigneeView = this.formatAssigneeView.bind(this);
         this.formatSubTableDataByViewType = this.formatSubTableDataByViewType.bind(this);
+        this.sortByStatus = this.sortByStatus.bind(this);
         this.sortByTaskNumber = this.sortByTaskNumber.bind(this);
         this.sortByTime = this.sortByTime.bind(this);
         this.updateStateByViewType = this.updateStateByViewType.bind(this);
@@ -82,6 +83,17 @@ class Table extends React.Component {
             }
             return totals;
         }, {});
+    }
+
+    /**
+     * Sort callback method to sort by Status
+     */
+    sortByStatus(valA, valB) {
+        const a = valA.toLowerCase();
+        const b = valB.toLowerCase();
+        if(a < b) return -1;
+        if(a > b) return 1;
+        return 0;
     }
 
     /**
@@ -296,11 +308,17 @@ class Table extends React.Component {
                         },
                         {
                             // STATUS
-                            accessor: 'status',
-                            Cell: (props) => (props.original.omitFromJqtr ? null : <Status info={props} />),
+                            accessor: (data) => data.omitFromJqtr ? '' : <Status info={data} />,
                             Footer: '',
                             Header: 'Status',
+                            id: 'status',
                             maxWidth: this.columnWidths[COLUMN_TYPES.STATUS],
+                            sortMethod: (a, b) => {
+                                const mappedStatus = [a, b].map((component) => {
+                                    return component === '' ? '' : component.props.info.status;
+                                });
+                                return this.sortByStatus(mappedStatus[0], mappedStatus[1])
+                            },
                             style: { cursor: 'default' }
                         },
                         {
@@ -478,7 +496,7 @@ class Table extends React.Component {
             );
         }
 
-        return <Error />;
+        return <Error message={'No Results in Your Query.'}/>;
     }
 
     formatSubTableDataByViewType(viewType, rowInfo) {

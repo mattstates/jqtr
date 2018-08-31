@@ -16,6 +16,7 @@ class App extends React.Component {
             issues: undefined,
             input: '',
             loading: true,
+            hasHad401: false,
             hasError: false,
             notification: {
                 message: '',
@@ -39,7 +40,11 @@ class App extends React.Component {
             credentials: 'same-origin'
         })
             .then((response) => {
-                return response.json();
+
+                if (response.ok) {
+                    return response.json();
+                }
+                throw response;
             })
             .then((jiraData) => {
                 window.location.hash = `jql=${window.encodeURIComponent(searchQuery)}`;
@@ -55,11 +60,13 @@ class App extends React.Component {
             })
             .catch((err) => {
                 console.error(err);
+                const requestMessage = err.ok ? 'There was a problem getting a response.' : `${err.status} ${err.statusText}.`;
                 this.setState({
                     loading: false,
                     hasError: true,
+                    hasHad401: err.status === 401 || this.state.hasHad401,
                     notification: {
-                        message: 'There was a problem getting a response. Please check your JQL query and/or try again.',
+                        message: `${requestMessage}\n Please check your JQL query and/or try again.`,
                         items: []
                     }
                 });
@@ -85,7 +92,7 @@ class App extends React.Component {
 
         // show errors, otherwise loading/table
         if (this.state.hasError) {
-            renderComponent = <Error message={this.state.notification.message} />;
+            renderComponent = <Error message={this.state.notification.message} permissions={this.state.hasHad401} />;
         } else {
             renderComponent = this.state.loading ? (
                 <div className="loader" />

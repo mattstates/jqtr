@@ -35,7 +35,7 @@ export default (props) => {
 
         {
             // STATUS
-            Cell: (props) => <Status info={props} />,
+            Cell: (data) => <Status info={data.original} />,
             accessor: 'status',
             maxWidth: props.columnWidths[COLUMN_TYPES.STATUS],
             style: { cursor: 'default' }
