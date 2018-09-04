@@ -29,7 +29,7 @@ class Time extends React.Component {
         if (typeof time === 'number') {
             timeOutput = <span className="time">{printHoursPretty(time)}{warning ? ` ${WARNING_SYMBOL}` : null}</span>;
         } else if (time === null) {
-            timeOutput = <span title="Needs Estimate" className={'needs-estimate'}>{WARNING_SYMBOL}</span>;
+            timeOutput = <span title="Needs Estimate" className={'warning-symbol'}>{WARNING_SYMBOL}</span>;
         }
 
         const assigneeInfo = assignee && assignee.name ? (

@@ -5,7 +5,7 @@ import Status from './Status.jsx';
 import SubTable from './SubTable.jsx';
 import Time from './Time.jsx';
 import ViewSelector from './ViewSelector.jsx';
-import { COLUMN_TYPES, NONE, UNASSIGNED, VIEW_TYPES } from '../../utils/constants.js';
+import { COLUMN_TYPES, NONE, UNASSIGNED, VIEW_TYPES, WARNING_SYMBOL } from '../../utils/constants.js';
 import { storageAvailable, titleCase } from '../../utils/utils.js';
 
 /**
@@ -308,7 +308,7 @@ class Table extends React.Component {
                         },
                         {
                             // STATUS
-                            accessor: (data) => data.omitFromJqtr ? '' : <Status info={data} />,
+                            accessor: (data) => data.omitFromJqtr ? <span className='warning-symbol' title='Task Omitted from Query' info={{status: ''}}>{WARNING_SYMBOL}</span> : <Status info={data} />,
                             Footer: '',
                             Header: 'Status',
                             id: 'status',
