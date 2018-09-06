@@ -21,6 +21,10 @@
         text-decoration: none;
     }
 
+    .bold {
+        font-weight: 700;
+    }
+
     .warning-symbol {
         cursor: default;
         display: flex;
@@ -101,7 +105,23 @@
     .viewSelector {
         display: flex;
         flex-direction: column;
-        div.disabled { pointer-events: none; }
+        justify-content: space-between;
+        min-height: 65px;
+        div {
+            border: 1px outset #ddd;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 26px;
+            justify-content: center;
+            pointer-events: all;
+            position: relative;
+        }
+        div.active { 
+            background-color: #efefef;
+            border-style: inset;
+            cursor: default;
+        }
         div.initiative:before { content: '💡' }
         div.assignee:before { content: '👷' }
     }
@@ -137,6 +157,10 @@
         justify-content: center;
     }
 
+    .rt-tr-group:hover {
+        background-color: rgba(255, 244, 95, 0.2);
+    }
+
     .ReactTable .rt-table {
         overflow: inherit;
     }
@@ -146,6 +170,11 @@
         position: sticky;
         top: 0;
         z-index: 10;
+        .rt-th {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
     }
 
     .subtable {
@@ -153,6 +182,9 @@
         border-left: 0;
         border-right: 1px solid #656565;
         border-top: 0;
+        .rt-thead.-header {
+            z-index: 1;
+        }
     }
 
     /* https://stephanwagner.me/only-css-loading-spinner */

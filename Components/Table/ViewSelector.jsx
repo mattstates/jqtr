@@ -7,9 +7,9 @@ export default (props) => {
                 return (
                     <div
                         key={index}
-                        className={`${view}${props.currentView === view ? ' disabled' : ''}`}
+                        className={`${view}${props.currentView === view ? ' active' : ''}`}
                         title={`${titleCase(view)} View`}
-                        onClick={props.clickHandler.bind(null, view)}
+                        onClick={props.currentView === view ? null : props.clickHandler.bind(null, view)}
                     />
                 );
             })}

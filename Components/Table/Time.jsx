@@ -9,6 +9,7 @@ class Time extends React.Component {
             mousedOver: false
         };
         this.handleMouseHover = this.handleMouseHover.bind(this);
+        this.getName = this.getName.bind(this);
     }
 
     handleMouseHover(e) {
@@ -21,6 +22,13 @@ class Time extends React.Component {
         };
     }
 
+    getName(assignee) {
+        let assigneeName = assignee && assignee.name ? assignee.name.split(' ') : [];
+        const length = assigneeName.length;
+        assigneeName = length > 1 ? [`${assigneeName[0]} ${assigneeName[length - 1]}`] : assigneeName;
+        return assigneeName[0];
+    }
+
     render() {
         const { assignee, time, warning } = this.props;
 
@@ -31,10 +39,11 @@ class Time extends React.Component {
         } else if (time === null) {
             timeOutput = <span title="Needs Estimate" className={'warning-symbol'}>{WARNING_SYMBOL}</span>;
         }
-
-        const assigneeInfo = assignee && assignee.name ? (
+        const assigneeName = this.getName(assignee);
+        const assigneeInfo = assigneeName ? (
             <div className={'assignee-panel'}>
-                <span>{assignee.name.split(' ')[0]}</span>
+            {/* Refactor this into a proper tool tip. */}
+                <span className='bold'>{`${assigneeName}`}</span>
             </div>
         ) : null;
 
