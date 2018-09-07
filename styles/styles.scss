@@ -170,7 +170,7 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        &:hover * {
+        &:hover .rt-tr {
             background: rgba(255, 255, 255, 0);
         }
         .rt-th {
