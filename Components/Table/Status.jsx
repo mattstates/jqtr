@@ -4,7 +4,7 @@ import React from 'react';
 * will show team name on hover.
 */
 class Status extends React.Component {
-    constructor(props) {
+    constructor() {
         super();
         this.state = {
             mousedOver: false
@@ -12,7 +12,7 @@ class Status extends React.Component {
         this.handleMouseHover = this.handleMouseHover.bind(this);
     }
 
-    handleMouseHover(e) {
+    handleMouseHover() {
         this.setState(this.toggleMousedOver);
     }
 

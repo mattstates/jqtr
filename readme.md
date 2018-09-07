@@ -4,11 +4,18 @@ JQTR Stands for Jira Query Time Remaining.
 
 JQTR allows a user to supply a valid JQL (*JIRA query language*) query and show a table of results to help determine the number of remaining hours left in the result set.
 
-This code is accessed at my company by pasting the transpiled source code into an HTML widget in Confluence.
+This code is deployed pasting the transpiled and minified source code into an HTML widget in Confluence.
+[https://confluence.lampsplus.com:8093/display/WDP/Jira+Query+Time+Remaining](https://confluence.lampsplus.com:8093/display/WDP/Jira+Query+Time+Remaining)
 
 ## Features
 
-Currently there is one view that shows a table of table index, task names, status, total time remaining, followed by a dynamic set of column showing total time remaining for each resource group.
+There are two views: Assignee and Initiative.
+
+### Assignee View
+- Data is organized by each person assigned a task within the query result set.
+
+### Initiative View
+- Data is organized and aggregated by Jira parent level task.
 
 ## Core Technologies
 
@@ -26,4 +33,4 @@ or you can run a local server with hot reloading with
 
     npm run dev
 
-Please open any issues and feel free to contribute.
+Please feel free to contribute.
