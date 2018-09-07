@@ -5,7 +5,7 @@ import Time from './Time.jsx';
 import { COLUMN_TYPES, VIEW_TYPES } from '../../utils/constants.js';
 
 export default (props) => {
-    const {viewType} = props;
+    const { viewType } = props;
     const columns = [
         {
             // PLACEHOLDER - KEEPS COLUMNS ALIGNED.

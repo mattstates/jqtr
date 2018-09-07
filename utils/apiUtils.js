@@ -1,4 +1,4 @@
-import { lampstrackUrl, jiraApiUrl, jiraApiUrlByIssue, base64Key } from '../ignore/private.js';
+import { lampstrackUrl, jiraApiUrl, jiraApiUrlByIssue, base64Key } from '../utils/urls.js';
 
 /*
 *   Initial issue mapping of the raw response from JIRA.

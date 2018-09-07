@@ -3,7 +3,7 @@ import { printHoursPretty } from '../../utils/utils.js';
 import { WARNING_SYMBOL } from '../../utils/constants.js';
 
 class Time extends React.Component {
-    constructor(props) {
+    constructor() {
         super();
         this.state = {
             mousedOver: false
@@ -12,7 +12,7 @@ class Time extends React.Component {
         this.getName = this.getName.bind(this);
     }
 
-    handleMouseHover(e) {
+    handleMouseHover() {
         this.setState(this.toggleMousedOver);
     }
 
@@ -35,15 +35,24 @@ class Time extends React.Component {
         let timeOutput = null;
 
         if (typeof time === 'number') {
-            timeOutput = <span className="time">{printHoursPretty(time)}{warning ? ` ${WARNING_SYMBOL}` : null}</span>;
+            timeOutput = (
+                <span className="time">
+                    {printHoursPretty(time)}
+                    {warning ? ` ${WARNING_SYMBOL}` : null}
+                </span>
+            );
         } else if (time === null) {
-            timeOutput = <span title="Needs Estimate" className={'warning-symbol'}>{WARNING_SYMBOL}</span>;
+            timeOutput = (
+                <span title="Needs Estimate" className={'warning-symbol'}>
+                    {WARNING_SYMBOL}
+                </span>
+            );
         }
         const assigneeName = this.getName(assignee);
         const assigneeInfo = assigneeName ? (
             <div className={'assignee-panel'}>
-            {/* Refactor this into a proper tool tip. */}
-                <span className='bold'>{`${assigneeName}`}</span>
+                {/* Refactor this into a proper tool tip. */}
+                <span className="bold">{`${assigneeName}`}</span>
             </div>
         ) : null;
 

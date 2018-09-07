@@ -91,8 +91,8 @@ class Table extends React.Component {
     sortByStatus(valA, valB) {
         const a = valA.toLowerCase();
         const b = valB.toLowerCase();
-        if(a < b) return -1;
-        if(a > b) return 1;
+        if (a < b) {return -1;}
+        if (a > b) {return 1;}
         return 0;
     }
 
@@ -271,7 +271,7 @@ class Table extends React.Component {
                                 const classes = [isExpanded ? 'expandedIndex' : 'closedIndex', enabled ? 'expandedEnabled' : ''];
                                 return <div className={classes.join(' ')}>{viewIndex + 1}</div>;
                             },
-                            Header: (data) => {
+                            Header: () => {
                                 return (
                                     <ViewSelector
                                         currentView={this.state.viewType}
@@ -308,7 +308,14 @@ class Table extends React.Component {
                         },
                         {
                             // STATUS
-                            accessor: (data) => data.omitFromJqtr ? <span className='warning-symbol' title='Task Omitted from Query' info={{status: ''}}>{WARNING_SYMBOL}</span> : <Status info={data} />,
+                            accessor: (data) =>
+                                data.omitFromJqtr ? (
+                                    <span className="warning-symbol" title="Task Omitted from Query" info={{ status: '' }}>
+                                        {WARNING_SYMBOL}
+                                    </span>
+                                ) : (
+                                    <Status info={data} />
+                                ),
                             Footer: '',
                             Header: 'Status',
                             id: 'status',
@@ -317,7 +324,7 @@ class Table extends React.Component {
                                 const mappedStatus = [a, b].map((component) => {
                                     return component === '' ? '' : component.props.info.status;
                                 });
-                                return this.sortByStatus(mappedStatus[0], mappedStatus[1])
+                                return this.sortByStatus(mappedStatus[0], mappedStatus[1]);
                             },
                             style: { cursor: 'default' }
                         },
@@ -496,7 +503,7 @@ class Table extends React.Component {
             );
         }
 
-        return <Error message={'No Results in Your Query.'}/>;
+        return <Error message={'No Results in Your Query.'} />;
     }
 
     formatSubTableDataByViewType(viewType, rowInfo) {
