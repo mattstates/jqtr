@@ -146,9 +146,17 @@
     }
 
     // React-Table Overrides
-    .rt-resizable-header-content,
-    .rt-tfoot .rt-td {
-        font-weight: bold;
+    .rt-resizable-header-content {
+        font-weight: 700;
+    }
+
+    .rt-tfoot {
+        .rt-tr:hover {
+            background: #fff;
+        }
+        .rt-td {
+            font-weight: 700;
+        }
     }
 
     .rt-td {
