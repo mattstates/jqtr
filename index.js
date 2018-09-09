@@ -4,8 +4,9 @@ import Error from './Components/Error.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Table from './Components/Table/Table.jsx';
+import { jiraApiUrl, lampstrackUrl } from './utils/urls.js';
+import { mapToUsefulData, gatherAllTasks } from './utils/apiUtils.js';
 import { storageAvailable } from './utils/utils.js';
-import { mapToUsefulData, gatherAllTasks, lampstrackUrl, jiraApiUrl } from './utils/apiUtils.js';
 
 const domEntryPoint = document.getElementById('jqtrapp');
 

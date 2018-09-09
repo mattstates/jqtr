@@ -1,4 +1,4 @@
-import { lampstrackUrl, jiraApiUrl, jiraApiUrlByIssue, base64Key } from '../utils/urls.js';
+import { jiraApiUrlByIssue, base64Key } from '../utils/urls.js';
 
 /*
 *   Initial issue mapping of the raw response from JIRA.
@@ -250,4 +250,4 @@ function getJiraTaskById(taskId) {
         .then(mapToUsefulData);
 }
 
-export { mapToUsefulData, gatherAllTasks, jiraApiUrl, lampstrackUrl };
+export { mapToUsefulData, gatherAllTasks };
