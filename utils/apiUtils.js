@@ -1,8 +1,9 @@
-import { jiraApiUrlByIssue, base64Key } from '../utils/urls.js';
+import { base64Key, jiraApiUrlByIssue } from '../utils/urls.js';
 
-/*
-*   Initial issue mapping of the raw response from JIRA.
-*   Code is mostly organized in the same way as a JIRA task on lampstrack.
+/**
+* @param {Object} issue - Raw Jira issue
+* Initial issue mapping of the raw response from Jira.
+* Code is mostly organized in the same way as a Jira task on lampstrack.
 */
 function mapToUsefulData(issue) {
     const { fields } = issue;
@@ -117,6 +118,8 @@ function mapToUsefulData(issue) {
             })()
         },
 
+        // custom flag to denote when we have had to access additional Jira info but should not include
+        // the issue's data in the table's results for time and resources.
         omitFromJqtr: false
     };
 
@@ -128,18 +131,15 @@ function mapToUsefulData(issue) {
     //customfield_13180 has details about Branches, Builds, etc. in the Development section of JIRA.
 }
 
-// TODO: Try to break this up so it can be done without adding more array looping
-/*
-*   Attempts to map fully-detailed issues to a parent task's subtask array.
-*   Takes the whole issues collection from the API response and removes issues that are subtasks
-*   * I am sure that passing setState here should be wrapped and called from the invoking component
-*   TODO: Refactor...
-*/
+// TODO: Refactor...
+/**
+ * @param {Array} taskCollection - full collection of tasks
+ * Returns an array of formatted Jira results aggregated by parent tasks.
+ */
+function gatherAllTasks(taskCollection) {
+    let tasks = taskCollection;
 
-function gatherAllTasks(unmappedCollection) {
-    let tasks = unmappedCollection;
-
-    let missingParentTaskIds = findMissingParentTasks(unmappedCollection);
+    let missingParentTaskIds = findMissingParentTasks(taskCollection);
 
     if (missingParentTaskIds.length) {
         return Promise.all(missingParentTaskIds.map((id) => getJiraTaskById(id))).then((data) => {
@@ -148,7 +148,7 @@ function gatherAllTasks(unmappedCollection) {
             const mappedData = data.map((task) => {
                 task.omitFromJqtr = true;
                 task.subtasks.map((subtask) => {
-                    if (!unmappedCollection.find((task) => task.id === subtask.id)) {
+                    if (!taskCollection.find((issue) => issue.id === subtask.id)) {
                         subtask.omitFromJqtr = true;
                     }
                     return subtask;
@@ -167,26 +167,44 @@ function gatherAllTasks(unmappedCollection) {
     });
 }
 
+/**
+ * @param {Array} taskCollection - full collection of tasks
+ * Returns all an array of only parent level tasks with all subtasks
+ * mapped to the parent's .subtasks property.
+ */
 function mapSubtasksToParents(taskCollection) {
-    return taskCollection.reduce((collection, task, index, array) => {
+    return taskCollection.reduce((collection, task) => {
         if (task.isSubtask) {
             return collection;
         }
 
         if (task.subtasks.length) {
-            task.subtasks = groupTasksByKey(array, task.subtasks, 'id');
+            task.subtasks = groupTasksByKey(taskCollection, task.subtasks, 'id');
         }
 
         return [...collection, task];
     }, []);
 }
 
-function groupTasksByKey(parentArray, childArray, primaryKey) {
+/**
+ * @param {Array} taskCollection - full collection of tasks
+ * @param {Array} childArray - a task's .subtasks collection
+ * @param {string} primaryKey - the property to identify tasks
+ * Returns childArray mapped to fully details tasks and filtered to match the jql query results.
+ *
+ * Normally the tasks inside of a parent's subtasks property comes from Jira without all of the subtask's Jira information.
+ * Using this method, the entire collection is passed in and all matching subtasks are replaced
+ * with their "full" versions. This is done so every task in the collection will behave more uniformly.
+ */
+function groupTasksByKey(taskCollection, childArray, primaryKey) {
     return childArray
         .map((childArrayTask) => {
-            const matchedTask = parentArray.find((parentArrayTask) => parentArrayTask[primaryKey] === childArrayTask[primaryKey]);
-            //TODO: Refactor, remove the console.warn to make this more pure.
-            return matchedTask ? matchedTask : console.warn(`The JQL query has omitted a subtask (${childArrayTask.taskNumber}: ${childArrayTask.taskTitle}).`);
+            const matchedTask = taskCollection.find((parentArrayTask) => parentArrayTask[primaryKey] === childArrayTask[primaryKey]);
+            if (matchedTask) {
+                return matchedTask;
+            }
+            console.warn(`The JQL query has omitted a subtask (${childArrayTask.taskNumber}: ${childArrayTask.taskTitle}).`);
+            return null;
         })
         .filter((subtask) => Boolean(subtask));
 }
@@ -206,7 +224,7 @@ function personHelper(roleField) {
 }
 
 /**
- * @param collection: Array of Jira Tasks
+ * @param {Array} collection - Array of Jira Tasks
  * returns Array of unique parent task IDs where the parent task was not in the original collection.
  */
 function findMissingParentTasks(collection) {
@@ -239,7 +257,7 @@ function getJiraTaskById(taskId) {
     let headers = new Headers();
     headers.append('Access-Control-Allow-Credentials', 'true');
     headers.append('Authorization', `Basic ${base64Key}`);
-    // Create your own JIRA API Key this one is tied to: mstates.
+    //Jira API Key was created with user 'mstates'.
 
     return fetch(jiraApiUrlByIssue + taskId, {
         method: 'GET',
@@ -247,7 +265,8 @@ function getJiraTaskById(taskId) {
         credentials: 'include'
     })
         .then((data) => data.json())
-        .then(mapToUsefulData);
+        .then(mapToUsefulData)
+        .catch(console.error);
 }
 
-export { mapToUsefulData, gatherAllTasks };
+export { gatherAllTasks, mapToUsefulData };

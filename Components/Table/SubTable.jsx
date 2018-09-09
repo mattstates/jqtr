@@ -59,7 +59,7 @@ export default (props) => {
                     }
                     return '';
                 },
-                Cell: (props) => <Time time={props.value} assignee={viewType === VIEW_TYPES.INITIATIVE ? props.original.assignee : null} />,
+                Cell: (data) => <Time time={data.value} assignee={viewType === VIEW_TYPES.INITIATIVE ? data.original.assignee : null} />,
                 id: resource[0],
                 maxWidth: props.columnWidths[COLUMN_TYPES.RESOURCEGROUP]
             };

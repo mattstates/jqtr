@@ -1,4 +1,3 @@
-/* eslint-disable */
 // project in (LP) AND (fixVersion = 71 OR (affectedVersion in (70, 71) AND status in (Open, Reopened, Evaluating, "Requirements Review", "Clarification Needed") AND priority > "Low Priority")) AND status not in (Cancelled, Closed, Resolved, "Deployment - Testing", "Deployment - PPE", "Stakeholder Test", "Stakeholder Test - PPE", "Stakeholder Test - Prod")
 export default {
     expand: 'schema,names',
