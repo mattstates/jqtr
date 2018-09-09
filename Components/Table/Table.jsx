@@ -6,7 +6,8 @@ import SubTable from './SubTable.jsx';
 import Time from './Time.jsx';
 import ViewSelector from './ViewSelector.jsx';
 import { COLUMN_TYPES, NONE, UNASSIGNED, VIEW_TYPES, WARNING_SYMBOL } from '../../utils/constants.js';
-import { storageAvailable, titleCase } from '../../utils/utils.js';
+import { getTooltipTimeData } from './tableUtils.js';
+import { flattenDeep, storageAvailable, titleCase } from '../../utils/utils.js';
 
 /**
  * <Table /> Wraps the react-table component.
@@ -17,9 +18,10 @@ class Table extends React.Component {
         super(props);
         // Methods
         this.alphabeticalSortPinnedValue = this.alphabeticalSortPinnedValue.bind(this);
-        this.getColumnWidthByType = this.getColumnWidthByType.bind(this);
         this.formatAssigneeView = this.formatAssigneeView.bind(this);
         this.formatSubTableDataByViewType = this.formatSubTableDataByViewType.bind(this);
+        this.getColumnWidthByType = this.getColumnWidthByType.bind(this);
+        this.showFooterWarning = this.showFooterWarning.bind(this);
         this.sortByStatus = this.sortByStatus.bind(this);
         this.sortByTaskNumber = this.sortByTaskNumber.bind(this);
         this.sortByTime = this.sortByTime.bind(this);
@@ -91,8 +93,12 @@ class Table extends React.Component {
     sortByStatus(valA, valB) {
         const a = valA.toLowerCase();
         const b = valB.toLowerCase();
-        if (a < b) {return -1;}
-        if (a > b) {return 1;}
+        if (a < b) {
+            return -1;
+        }
+        if (a > b) {
+            return 1;
+        }
         return 0;
     }
 
@@ -249,6 +255,15 @@ class Table extends React.Component {
         }
     }
 
+    /**
+     * Returns boolean
+     * @param {*} collection
+     * @param {*} resourceQueue
+     */
+    showFooterWarning(collection, resourceQueue) {
+        return collection.filter((task) => !task.omitFromJqtr && task.resourceQueue === resourceQueue && task.timeProps.needsEstimate).length > 0;
+    }
+
     render() {
         if (this.state.dataSet.length) {
             // 2D array of [...[resourceQueue, total]]
@@ -353,8 +368,21 @@ class Table extends React.Component {
                         ...sortedResourceList.map((resource) => {
                             return {
                                 accessor: (data) => this.resourceAccumulator([data])[resource[0]],
-                                Cell: (props) => <Time time={props.value} assignee={props.original.subtasks.length < 1 ? props.original.assignee : null} />,
-                                Footer: <Time time={resource[1] || 0} />,
+                                Cell: (props) => {
+                                    const tooltipData = getTooltipTimeData([props.original, ...props.original.subtasks], resource[0]);
+                                    return props.value === undefined ? null : (
+                                        <Time time={props.value} id={props.original.id + resource[0]} tooltipData={tooltipData.length ? tooltipData : null} />
+                                    );
+                                },
+                                Footer: (info) => (
+                                    <Time
+                                        red={this.showFooterWarning(
+                                            flattenDeep(info.data.map((item) => [item._original, ...item._original.subtasks])),
+                                            resource[0]
+                                        )}
+                                        time={resource[1] || 0}
+                                    />
+                                ),
                                 Header: resource[0],
                                 id: resource[0],
                                 maxWidth: this.columnWidths[COLUMN_TYPES.RESOURCEGROUP],
@@ -448,9 +476,14 @@ class Table extends React.Component {
                                     const warning = props.original[1].some((task) => {
                                         return task.timeProps.needsEstimate && task.resourceQueue === resource[0];
                                     });
-                                    return <Time warning={warning} time={props.value} />;
+                                    return props.value === undefined ? null : <Time warning={warning} time={props.value} />;
                                 },
-                                Footer: <Time time={resource[1] || 0} />,
+                                Footer: (info) => (
+                                    <Time
+                                        red={this.showFooterWarning(flattenDeep(info.data.map((item) => item._original[1])), resource[0])}
+                                        time={resource[1] || 0}
+                                    />
+                                ),
                                 Header: resource[0],
                                 id: resource[0],
                                 maxWidth: this.columnWidths[COLUMN_TYPES.RESOURCEGROUP],

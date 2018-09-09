@@ -7,7 +7,7 @@ function PermissionIssue() {
             <p><a href={'https://confluence.lampsplus.com:8093/display/WDP/Targeted+Version+Map'} target={'_new'}>{'Targeted Version Map'}</a></p>
             <p>{'If this did not resolve your issue, you may need to contact the Lamps Plus Atlassian Administrator.'}</p>
         </div>
-    )
+    );
 }
 
 export default (props) => {

@@ -1,67 +1,54 @@
 import React from 'react';
-import { printHoursPretty } from '../../utils/utils.js';
+import ReactTooltip from 'react-tooltip';
 import { WARNING_SYMBOL } from '../../utils/constants.js';
+import { printHoursPretty } from '../../utils/utils.js';
 
-class Time extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            mousedOver: false
-        };
-        this.handleMouseHover = this.handleMouseHover.bind(this);
-        this.getName = this.getName.bind(this);
+function formatTooltip(tooltipData, id = '') {
+    if (!tooltipData || !tooltipData.length) {
+        return null;
     }
-
-    handleMouseHover() {
-        this.setState(this.toggleMousedOver);
+    if (tooltipData.length === 1) {
+        return <div>{concatenateTimeValues(tooltipData[0])}</div>;
     }
+    return tooltipData.map((person, i) => <div key={person.assignee + i + id}>{concatenateTimeValues(person, true)}</div>);
+}
 
-    toggleMousedOver(prevState) {
-        return {
-            mousedOver: !prevState.mousedOver
-        };
-    }
+function concatenateTimeValues(tooltipPerson, includeTime = false) {
+    const time = includeTime ? printHoursPretty(tooltipPerson.timeRemaining) : '';
+    return `${tooltipPerson.assignee} ${tooltipPerson.needsEstimate ? WARNING_SYMBOL : time}`;
+}
 
-    getName(assignee) {
-        let assigneeName = assignee && assignee.name ? assignee.name.split(' ') : [];
-        const length = assigneeName.length;
-        assigneeName = length > 1 ? [`${assigneeName[0]} ${assigneeName[length - 1]}`] : assigneeName;
-        return assigneeName[0];
-    }
+const Time = (props) => {
+    const { tooltipData, time, warning, id, red } = props;
+    let timeOutput = null;
 
-    render() {
-        const { assignee, time, warning } = this.props;
-
-        let timeOutput = null;
-
-        if (typeof time === 'number') {
-            timeOutput = (
-                <span className="time">
-                    {printHoursPretty(time)}
-                    {warning ? ` ${WARNING_SYMBOL}` : null}
-                </span>
-            );
-        } else if (time === null) {
-            timeOutput = (
-                <span title="Needs Estimate" className={'warning-symbol'}>
-                    {WARNING_SYMBOL}
-                </span>
-            );
-        }
-        const assigneeName = this.getName(assignee);
-        const assigneeInfo = assigneeName ? (
-            <div className={'assignee-panel'}>
-                {/* Refactor this into a proper tool tip. */}
-                <span className="bold">{`${assigneeName}`}</span>
-            </div>
-        ) : null;
-
-        return (
-            <div className="status" onMouseEnter={this.handleMouseHover} onMouseLeave={this.handleMouseHover}>
-                {this.state.mousedOver && assigneeInfo && timeOutput ? assigneeInfo : timeOutput}
-            </div>
+    if (typeof time === 'number') {
+        timeOutput = (
+            <span className="time">
+                {printHoursPretty(time)}
+                {warning ? ` ${WARNING_SYMBOL}` : null}
+            </span>
+        );
+    } else if (time === null) {
+        timeOutput = (
+            <span title="Needs Estimate" className={'warning-symbol'}>
+                {WARNING_SYMBOL}
+            </span>
         );
     }
-}
+
+    if (tooltipData) {
+        return (
+            <React.Fragment>
+                <div data-for={id} data-tip className={'time' + (red ? ' red' : '')}>
+                    {timeOutput}
+                </div>
+                <ReactTooltip id={id} getContent={() => formatTooltip(tooltipData, id)} />
+            </React.Fragment>
+        );
+    }
+    return <div className={'time' + (red ? ' red' : '')}>{timeOutput}</div>;
+
+};
 
 export default Time;

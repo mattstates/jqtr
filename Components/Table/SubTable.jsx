@@ -3,6 +3,7 @@ import ReactTable from 'react-table';
 import Status from './Status.jsx';
 import Time from './Time.jsx';
 import { COLUMN_TYPES, VIEW_TYPES } from '../../utils/constants.js';
+import { getTooltipTimeData } from './tableUtils.js';
 
 export default (props) => {
     const { viewType } = props;
@@ -57,9 +58,17 @@ export default (props) => {
                     } else if (data.resourceQueue === resource[0] && data.timeProps.needsEstimate) {
                         return null;
                     }
-                    return '';
+                    return undefined;
                 },
-                Cell: (data) => <Time time={data.value} assignee={viewType === VIEW_TYPES.INITIATIVE ? data.original.assignee : null} />,
+                Cell: (data) => {
+                    return data.value === undefined ? null : (
+                        <Time
+                            time={data.value}
+                            id={data.original.id}
+                            tooltipData={viewType === VIEW_TYPES.INITIATIVE ? getTooltipTimeData([data.original], resource[0]) : null}
+                        />
+                    );
+                },
                 id: resource[0],
                 maxWidth: props.columnWidths[COLUMN_TYPES.RESOURCEGROUP]
             };
