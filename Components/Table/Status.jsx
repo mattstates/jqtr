@@ -1,42 +1,33 @@
 import React from 'react';
-/*
-* Render the Status component in the table column object. Has access to the row's data
-* will show team name on hover.
-*/
-class Status extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            mousedOver: false
-        };
-        this.handleMouseHover = this.handleMouseHover.bind(this);
-    }
+import ReactTooltip from 'react-tooltip';
+import { ALERT_SYMBOL, KEYTASK_SYMBOL } from '../../utils/constants.js';
 
-    handleMouseHover() {
-        this.setState(this.toggleMousedOver);
-    }
+const Status = (props) => {
+    const teamName = props.info.resourceGroup && props.info.resourceGroup.name;
+    const keyTaskIcon = props.info.labels &&
+        Boolean(props.info.labels.indexOf('key_task') >= 0) && (
+        <span className="keyTask" title="Key Task">
+            {KEYTASK_SYMBOL}
+        </span>
+    );
+    const resourceGroupWarningIcon = teamName ? null : (
+        <span className="hasTeam" title="No Team Assigned">
+            {ALERT_SYMBOL}
+        </span>
+    );
 
-    toggleMousedOver(prevState) {
-        return {
-            mousedOver: !prevState.mousedOver
-        };
-    }
-
-    render() {
-        const showTeamName = this.props.info.resourceGroup && this.props.info.resourceGroup.name;
-        const keyTask = this.props.info.labels &&
-            Boolean(this.props.info.labels.indexOf('key_task') >= 0) && <span className="keyTask" title="Key Task">🔑</span>;
-
-        return (
-            <div className="status" onMouseEnter={this.handleMouseHover} onMouseLeave={this.handleMouseHover}>
-                {this.state.mousedOver && showTeamName ? <span className='bold'>{showTeamName}</span> : this.props.info.status}
+    return (
+        <React.Fragment>
+            <div className="status" data-tip={teamName}>
+                {props.info.status}
                 <div className="iconRow">
-                    {showTeamName ? null : <span className="hasTeam" title="No Team Assigned">❗</span>}
-                    {keyTask}
+                    {resourceGroupWarningIcon}
+                    {keyTaskIcon}
                 </div>
             </div>
-        );
-    }
-}
+            <ReactTooltip />
+        </React.Fragment>
+    );
+};
 
 export default Status;

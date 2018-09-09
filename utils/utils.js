@@ -27,4 +27,9 @@ function titleCase(string) {
         .join(' ');
 }
 
-export { printHoursPretty, storageAvailable, titleCase };
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
+function flattenDeep(arr) {
+    return arr.reduce((acc, val) => (Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val)), []);
+}
+
+export { flattenDeep, printHoursPretty, storageAvailable, titleCase };
