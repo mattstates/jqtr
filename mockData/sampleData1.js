@@ -1,4 +1,3 @@
-/* eslint-disable */
 export default {
     expand: 'schema,names',
     startAt: 0,
