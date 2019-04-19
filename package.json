@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "parcel index.html",
-    "start": "parcel build index.js"
+    "start": "parcel build index.js",
+    "server": "node ./server/index.js"
   },
   "author": "Matt States",
   "license": "ISC",
@@ -22,6 +23,8 @@
     "prettier": "^1.12.1"
   },
   "dependencies": {
+    "express": "^4.16.4",
+    "node-fetch": "^2.3.0",
     "react": "^16.3.2",
     "react-dom": "^16.4.2",
     "react-table": "^6.8.2",

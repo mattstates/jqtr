@@ -35,10 +35,11 @@ class App extends React.Component {
             hasError: false,
             notification: { message: '', items: [] }
         });
-
-        fetch(`${jiraApiUrl}${window.encodeURIComponent('jql=' + window.encodeURIComponent(searchQuery) + '&maxResults=1000&fields=-description')}`, {
+//`${jiraApiUrl}${'jql=' + /*window.encodeURIComponent(searchQuery)*/searchQuery /*+ '&maxResults=1000&fields=-description'*/}
+        fetch(`/test?jql=${searchQuery}`, {
             method: 'GET',
-            credentials: 'same-origin'
+            credentials: 'include',
+            header: {'Origin': 'localhost:1234'}
         })
             .then((response) => {
 
