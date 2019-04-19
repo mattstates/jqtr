@@ -37,6 +37,12 @@ function mapToUsefulData(issue) {
         epicTaskNumber: propertyCheck(fields.customfield_10380),
         sprint: 'experimental', // See Experimental TODO: Fix This.
 
+        // customfield_13680 is currently only used to designate something as a Key Task. I am not sure why it uses an array of objects as its datatype.
+        keyTask: fields.customfield_13680 && fields.customfield_13680.some(item => item.value.toLowerCase() === "yes"),
+
+        // customefield_10180 is used for all flags.
+        flags: fields.customfield_10180 && fields.customfield_10180.map(flag => flag.value).join(' '),
+
         // status: fields.status.statusCategory.name, // "Done", "In Progress", "Closed" etc
         status: fields.status.name, // "Done", "In Progress", "Closed" etc
 
