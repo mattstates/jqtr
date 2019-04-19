@@ -24,8 +24,9 @@ class Status extends React.Component {
 
     render() {
         const showTeamName = this.props.info.resourceGroup && this.props.info.resourceGroup.name;
-        const keyTask = this.props.info.labels &&
-            Boolean(this.props.info.labels.indexOf('key_task') >= 0) && <span className="keyTask" title="Key Task">🔑</span>;
+        // customfield_13680 is currently only used to designate something as a Key Task. I am not sure why it uses an array of objects as its datatype.
+        const keyTask = this.props.info.keyTask && <span className="keyTask" title="Key Task">🔑</span>;
+        const flags = this.props.info.flags && <span className="keyTask" title={this.props.info.flags}>🚩</span>
 
         return (
             <div className="status" onMouseEnter={this.handleMouseHover} onMouseLeave={this.handleMouseHover}>
@@ -33,6 +34,7 @@ class Status extends React.Component {
                 <div className="iconRow">
                     {showTeamName ? null : <span className="hasTeam" title="No Team Assigned">❗</span>}
                     {keyTask}
+                    {flags}
                 </div>
             </div>
         );
