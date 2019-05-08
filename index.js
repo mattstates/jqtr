@@ -4,7 +4,7 @@ import Error from './Components/Error.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Table from './Components/Table/Table.jsx';
-import { authorizationValue, jiraApiUrl, lampstrackUrl } from './utils/urls.js';
+import { jiraApiUrl, lampstrackUrl } from './utils/urls.js';
 import { mapToUsefulData, gatherAllTasks, getFetchOptions } from './utils/apiUtils.js';
 import { storageAvailable } from './utils/utils.js';
 

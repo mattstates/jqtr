@@ -5,8 +5,14 @@ import Status from './Status.jsx';
 import SubTable from './SubTable.jsx';
 import Time from './Time.jsx';
 import ViewSelector from './ViewSelector.jsx';
-import { COLUMN_TYPES, NONE, UNASSIGNED, VIEW_TYPES, WARNING_SYMBOL } from '../../utils/constants.js';
-import { getTooltipTimeData } from './tableUtils.js';
+import { COLUMN_TYPES, UNASSIGNED, VIEW_TYPES, WARNING_SYMBOL } from '../../utils/constants.js';
+import {
+    alphabeticalSortPinnedValue,
+    getTooltipTimeData,
+    sortByStatus,
+    sortByTaskNumber,
+    sortByTime
+} from './tableUtils.js';
 import { flattenDeep, storageAvailable, titleCase } from '../../utils/utils.js';
 
 /**
@@ -17,14 +23,10 @@ class Table extends React.Component {
     constructor(props) {
         super(props);
         // Methods
-        this.alphabeticalSortPinnedValue = this.alphabeticalSortPinnedValue.bind(this);
         this.formatAssigneeView = this.formatAssigneeView.bind(this);
         this.formatSubTableDataByViewType = this.formatSubTableDataByViewType.bind(this);
         this.getColumnWidthByType = this.getColumnWidthByType.bind(this);
         this.showFooterWarning = this.showFooterWarning.bind(this);
-        this.sortByStatus = this.sortByStatus.bind(this);
-        this.sortByTaskNumber = this.sortByTaskNumber.bind(this);
-        this.sortByTime = this.sortByTime.bind(this);
         this.updateStateByViewType = this.updateStateByViewType.bind(this);
         this.viewSelector = this.updateStateByViewType.bind(this);
 
@@ -88,94 +90,6 @@ class Table extends React.Component {
     }
 
     /**
-     * Sort callback method to sort by Status
-     */
-    sortByStatus(valA, valB) {
-        const a = valA.toLowerCase();
-        const b = valB.toLowerCase();
-        if (a < b) {
-            return -1;
-        }
-        if (a > b) {
-            return 1;
-        }
-        return 0;
-    }
-
-    /**
-     * Sort callback method to sort by time.
-     * Descending order would be:
-     * Highest Numerical Value > Needs Estimate (React Component) that shows WARNING_SYMBOL > No Tasks (empty cell)
-     * @param {varies} a
-     * @param {varies} b
-     */
-    sortByTime(a, b) {
-        const [aValue, bValue] = [a, b].map((value) => {
-            switch (typeof value) {
-                // no task meets this criteria
-                case 'undefined':
-                    return -6;
-                // value is already a react component
-                case 'object':
-                    return -5;
-                // empty string
-                case 'string':
-                    return -4;
-                // null or a number
-                default:
-                    return value;
-            }
-        });
-
-        if (aValue < bValue) {
-            return 1;
-        }
-        if (aValue > bValue) {
-            return -1;
-        }
-        return 0;
-    }
-
-    /**
-     * Sort callback method. Sorts Ascending by Project Type (LP, DBA, PSS, etc.) alphabetically then numerically by task number.
-     * @param {String} a
-     * @param {String} b
-     */
-    sortByTaskNumber(a, b) {
-        const [aProject, aTaskNumber] = a.split('-');
-        const [bProject, bTaskNumber] = b.split('-');
-        if (aProject === bProject) {
-            return Number(aTaskNumber) - Number(bTaskNumber);
-        }
-        if (aProject < bProject) {
-            return -1;
-        }
-        if (aProject > bProject) {
-            return 1;
-        }
-    }
-
-    /**
-     * Alphabetically sorts a 2d array by the first element of each child array.
-     * Pinned value will be arranged before "A". --Use in Array.sort callback.
-     * @param {Array} a - zeroeth element as a string.
-     * @param {Array} b - zeroeth element as a string.
-     * @param {String} pinnedValue [Optional] string to pin to the top of the sort order.
-     */
-    alphabeticalSortPinnedValue(a, b, pinnedValue = NONE) {
-        if (a[0] === pinnedValue) {
-            return -1;
-        } else if (b[0] === pinnedValue) {
-            return 1;
-        } else if (a[0] < b[0]) {
-            return -1;
-        } else if (a[0] > b[0]) {
-            return 1;
-        }
-        return 0;
-    }
-
-    /**
      * Returns a nested array sorted by Assignee Name. The second element in each nested array is an array of Jira Task Issues.
      * EX: [...['Assignee', [...{ JIRAISSUE }] ] ]
      * @param {Array} data - a collection of Jira Issues.
@@ -196,7 +110,7 @@ class Table extends React.Component {
                 assignees[name] ? assignees[name].push(task) : (assignees[name] = [task]);
                 return assignees;
             }, {})
-        ).sort((a, b) => this.alphabeticalSortPinnedValue(a, b, UNASSIGNED));
+        ).sort((a, b) => alphabeticalSortPinnedValue(a, b, UNASSIGNED));
     }
 
     updateStateByViewType(view) {
@@ -205,7 +119,7 @@ class Table extends React.Component {
 
         switch (view) {
             case VIEW_TYPES.INITIATIVE:
-                data = this.props.issues.sort((a, b) => this.sortByTaskNumber(a.taskNumber, b.taskNumber));
+                data = this.props.issues.sort((a, b) => sortByTaskNumber(a.taskNumber, b.taskNumber));
                 viewType = view;
                 break;
             case VIEW_TYPES.ASSIGNEE:
@@ -267,7 +181,7 @@ class Table extends React.Component {
     render() {
         if (this.state.dataSet.length) {
             // 2D array of [...[resourceQueue, total]]
-            const sortedResourceList = Object.entries(this.totalResources).sort(this.alphabeticalSortPinnedValue);
+            const sortedResourceList = Object.entries(this.totalResources).sort(alphabeticalSortPinnedValue);
 
             // React-Table Columns: Index, Task Name, Total Time Remaining, [Dynamic Resource Queue Time Remaining]
             let columns;
@@ -318,7 +232,7 @@ class Table extends React.Component {
                             Header: titleCase(VIEW_TYPES.INITIATIVE),
                             id: 'taskTitle',
                             minWidth: this.columnWidths[COLUMN_TYPES.VIEWTYPE],
-                            sortMethod: (a, b) => this.sortByTaskNumber(a.key, b.key),
+                            sortMethod: (a, b) => sortByTaskNumber(a.key, b.key),
                             style: { minHeight: 45 }
                         },
                         {
@@ -339,7 +253,7 @@ class Table extends React.Component {
                                 const mappedStatus = [a, b].map((component) => {
                                     return component === '' ? '' : component.props.info.status;
                                 });
-                                return this.sortByStatus(mappedStatus[0], mappedStatus[1]);
+                                return sortByStatus(mappedStatus[0], mappedStatus[1]);
                             },
                             style: { cursor: 'default' }
                         },
@@ -362,7 +276,7 @@ class Table extends React.Component {
                             Header: 'Total Time Remaining',
                             id: 'timeRemaining',
                             minWidth: this.columnWidths[COLUMN_TYPES.TOTALTIME],
-                            sortMethod: this.sortByTime
+                            sortMethod: sortByTime
                         },
                         // Spread resource-based time columns into columns list.
                         ...sortedResourceList.map((resource) => {
@@ -386,7 +300,7 @@ class Table extends React.Component {
                                 Header: resource[0],
                                 id: resource[0],
                                 maxWidth: this.columnWidths[COLUMN_TYPES.RESOURCEGROUP],
-                                sortMethod: this.sortByTime
+                                sortMethod: sortByTime
                             };
                         })
                     ];
@@ -458,7 +372,7 @@ class Table extends React.Component {
                             Header: 'Total Time Remaining',
                             id: 'timeRemaining',
                             minWidth: this.columnWidths[COLUMN_TYPES.TOTALTIME],
-                            sortMethod: this.sortByTime
+                            sortMethod: sortByTime
                         },
                         // Spread resource-based time columns into columns list.
                         ...sortedResourceList.map((resource) => {
@@ -487,7 +401,7 @@ class Table extends React.Component {
                                 Header: resource[0],
                                 id: resource[0],
                                 maxWidth: this.columnWidths[COLUMN_TYPES.RESOURCEGROUP],
-                                sortMethod: this.sortByTime
+                                sortMethod: sortByTime
                             };
                         })
                     ];

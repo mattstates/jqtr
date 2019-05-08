@@ -1,4 +1,5 @@
 import React from 'react';
+import ERROR_SYMBOL from '../utils/constants.js';
 
 function PermissionIssue() {
     return (
@@ -11,7 +12,7 @@ function PermissionIssue() {
 }
 
 export default (props) => {
-    const message = `😔 ${props.message || 'Error: Something went wrong.'}`;
+    const message = `${ERROR_SYMBOL} ${props.message || 'Error: Something went wrong.'}`;
     const permissionsMessage = props.permissions ? <PermissionIssue /> : null;
     return (
         <div className='messageContainer'>
