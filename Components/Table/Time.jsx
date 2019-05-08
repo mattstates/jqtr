@@ -10,6 +10,8 @@ function formatTooltip(tooltipData, id = '') {
     if (tooltipData.length === 1) {
         return <div>{concatenateTimeValues(tooltipData[0])}</div>;
     }
+
+    // Will show dupe entries for an assignee if they show up multiple times in subtasks. Maybe they should be aggregated?
     return tooltipData.map((person, i) => <div key={person.assignee + i + id}>{concatenateTimeValues(person, true)}</div>);
 }
 
@@ -20,6 +22,7 @@ function concatenateTimeValues(tooltipPerson, includeTime = false) {
 
 const Time = (props) => {
     const { tooltipData, time, warning, id, red } = props;
+ 
     let timeOutput = null;
 
     if (typeof time === 'number') {
