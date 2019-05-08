@@ -1,8 +1,9 @@
+const ALERT_SYMBOL = '❗';
+const FLAG_SYMBOL = '🚩'
+const KEYTASK_SYMBOL = '🔑';
 const NONE = 'None';
 const UNASSIGNED = 'Unassigned';
 const WARNING_SYMBOL = '⚠️';
-const KEYTASK_SYMBOL = '🔑';
-const ALERT_SYMBOL = '❗';
 
 const VIEW_TYPES = Object.freeze({
     ASSIGNEE: 'assignee',
@@ -20,6 +21,7 @@ const COLUMN_TYPES = Object.freeze({
 export {
     ALERT_SYMBOL,
     COLUMN_TYPES,
+    FLAG_SYMBOL,
     KEYTASK_SYMBOL,
     NONE,
     UNASSIGNED,

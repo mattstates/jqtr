@@ -1,16 +1,14 @@
-const baseJiraApiUrl = 'https://lampstrack.lampsplus.com:8443/rest/api/2/';
+const _baseJiraApiUrl = 'https://lampstrack.lampsplus.com:8443/rest/api/2/';
 
-const baseURL =
-    'https://lampstrack.lampsplus.com:8443/rest/api/2/';
+const _baseURL = '/plugins/servlet/applinks/proxy?appId=8da36fe0-de48-3afa-aae3-970436460c88&path=';
 
-const jiraApiUrl = baseJiraApiUrl + 'search?';
+const jiraApiUrl = _baseURL + _baseJiraApiUrl + 'search?';
 
-const jiraApiUrlByIssue = baseURL + 'issue/';
+const jiraApiUrlByIssue = _baseURL + _baseJiraApiUrl + 'issue/';
 
 const lampstrackUrl = 'https://lampstrack.lampsplus.com:8443/browse/';
 
-const jiraAPIKey = 'YofkFYFIy5bztnbtJikY61D4';
+//jira user: ciadmin
+const authorizationValue = 'Basic Y2lhZG1pbjp4eHVTTmRROTReY2VjIzlOcWVH';
 
-const base64Key = 'Basic Y2lhZG1pbjp4eHVTTmRROTReY2VjIzlOcWVH';
-
-export { baseURL, jiraApiUrl, lampstrackUrl, jiraApiUrlByIssue, base64Key };
+export { jiraApiUrl, lampstrackUrl, jiraApiUrlByIssue, authorizationValue };

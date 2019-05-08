@@ -1,10 +1,10 @@
-import { base64Key, jiraApiUrlByIssue } from '../utils/urls.js';
+import { authorizationValue, jiraApiUrlByIssue } from '../utils/urls.js';
 
 /**
-* @param {Object} issue - Raw Jira issue
-* Initial issue mapping of the raw response from Jira.
-* Code is mostly organized in the same way as a Jira task on lampstrack.
-*/
+ * @param {Object} issue - Raw Jira issue
+ * Initial issue mapping of the raw response from Jira.
+ * Code is mostly organized in the same way as a Jira task on lampstrack.
+ */
 function mapToUsefulData(issue) {
     const { fields } = issue;
 
@@ -37,6 +37,12 @@ function mapToUsefulData(issue) {
         failedCodeReviewCount: propertyCheck(fields.customfield_12680) || 0,
         epicTaskNumber: propertyCheck(fields.customfield_10380),
         sprint: 'experimental', // See Experimental TODO: Fix This.
+
+        // customfield_13680 is currently only used to designate something as a Key Task. I am not sure why it uses an array of objects as its datatype.
+        keyTask: fields.customfield_13680 && fields.customfield_13680.some((item) => item.value.toLowerCase() === 'yes'),
+
+        // customefield_10180 is used for all flags.
+        flags: fields.customfield_10180 && fields.customfield_10180.map((flag) => flag.value).join(' '),
 
         // status: fields.status.statusCategory.name, // "Done", "In Progress", "Closed" etc
         status: fields.status.name, // "Done", "In Progress", "Closed" etc
@@ -248,25 +254,29 @@ function propertyCheck(property) {
     return property ? property : '';
 }
 
+const getFetchOptions = () => {
+    const headers = new Headers();
+    headers.append('Access-Control-Allow-Credentials', 'true');
+    headers.append('Authorization', authorizationValue);
+
+    return {
+        method: 'GET',
+        headers: headers,
+        credentials: 'include'
+    };
+} 
+
 /**
  * Makes an API call to JIRA to get full Jira task information.
  * @param {String} taskId
  * returns - Javascript Object with Jira Task information.
  */
 function getJiraTaskById(taskId) {
-    let headers = new Headers();
-    headers.append('Access-Control-Allow-Credentials', 'true');
-    headers.append('Authorization', `Basic ${base64Key}`);
-    //Jira API Key was created with user 'mstates'.
 
-    return fetch(jiraApiUrlByIssue + taskId, {
-        method: 'GET',
-        headers: headers,
-        credentials: 'include'
-    })
+    return fetch(jiraApiUrlByIssue + taskId, getFetchOptions())
         .then((data) => data.json())
         .then(mapToUsefulData)
         .catch(console.error);
 }
 
-export { gatherAllTasks, mapToUsefulData };
+export { gatherAllTasks, mapToUsefulData, getFetchOptions };

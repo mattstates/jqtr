@@ -4,8 +4,8 @@ import Error from './Components/Error.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Table from './Components/Table/Table.jsx';
-import { jiraApiUrl, lampstrackUrl } from './utils/urls.js';
-import { mapToUsefulData, gatherAllTasks } from './utils/apiUtils.js';
+import { authorizationValue, jiraApiUrl, lampstrackUrl } from './utils/urls.js';
+import { mapToUsefulData, gatherAllTasks, getFetchOptions } from './utils/apiUtils.js';
 import { storageAvailable } from './utils/utils.js';
 
 const domEntryPoint = document.getElementById('jqtrapp');
@@ -35,14 +35,9 @@ class App extends React.Component {
             hasError: false,
             notification: { message: '', items: [] }
         });
-//`${jiraApiUrl}${'jql=' + /*window.encodeURIComponent(searchQuery)*/searchQuery /*+ '&maxResults=1000&fields=-description'*/}
-        fetch(`/test?jql=${searchQuery}`, {
-            method: 'GET',
-            credentials: 'include',
-            header: {'Origin': 'localhost:1234'}
-        })
-            .then((response) => {
 
+        fetch(`${jiraApiUrl}jql=${window.encodeURIComponent(searchQuery)}&maxResults=1000&fields=-description`, getFetchOptions())
+            .then((response) => {
                 if (response.ok) {
                     return response.json();
                 }
