@@ -11,13 +11,13 @@ const Status = (props) => {
         </span>
     );
 
-    const keyTask = props.info.keyTask && (
+    const keyTaskIcon = props.info.keyTask && (
         <span className="keyTask" title="Key Task">
             {KEYTASK_SYMBOL}
         </span>
     );
 
-    const flags = props.info.flags && (
+    const flagsIcon = props.info.flags && (
         <span className="keyTask" title={props.info.flags}>
             {FLAG_SYMBOL}
         </span>
@@ -28,8 +28,8 @@ const Status = (props) => {
             {props.info.status}
             <div className="iconRow">
                 {resourceGroupWarningIcon}
-                {keyTask}
-                {flags}
+                {keyTaskIcon}
+                {flagsIcon}
             </div>
             <ReactTooltip />
         </div>

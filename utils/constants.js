@@ -1,4 +1,5 @@
 const ALERT_SYMBOL = '❗';
+const ERROR_SYMBOL = '😔';
 const FLAG_SYMBOL = '🚩'
 const KEYTASK_SYMBOL = '🔑';
 const NONE = 'None';
@@ -21,6 +22,7 @@ const COLUMN_TYPES = Object.freeze({
 export {
     ALERT_SYMBOL,
     COLUMN_TYPES,
+    ERROR_SYMBOL,
     FLAG_SYMBOL,
     KEYTASK_SYMBOL,
     NONE,

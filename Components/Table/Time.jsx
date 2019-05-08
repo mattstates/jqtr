@@ -22,7 +22,7 @@ function concatenateTimeValues(tooltipPerson, includeTime = false) {
 
 const Time = (props) => {
     const { tooltipData, time, warning, id, red } = props;
- 
+
     let timeOutput = null;
 
     if (typeof time === 'number') {
@@ -50,8 +50,8 @@ const Time = (props) => {
             </React.Fragment>
         );
     }
-    return <div className={'time' + (red ? ' red' : '')}>{timeOutput}</div>;
 
+    return <div className={'time' + (red ? ' red' : '')}>{timeOutput}</div>;
 };
 
 export default Time;

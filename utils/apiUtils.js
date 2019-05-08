@@ -124,7 +124,7 @@ function mapToUsefulData(issue) {
             })()
         },
 
-        // custom flag to denote when we have had to access additional Jira info but should not include
+        // Flag to denote when we have had to access additional Jira info but should not include
         // the issue's data in the table's results for time and resources.
         omitFromJqtr: false
     };
