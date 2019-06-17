@@ -21,7 +21,7 @@ function concatenateTimeValues(tooltipPerson, includeTime = false) {
 }
 
 const Time = (props) => {
-    const { tooltipData, time, warning, id, red } = props;
+    const { tooltipData, time, warning, id, red, progressInfo } = props;
 
     let timeOutput = null;
 
@@ -46,12 +46,26 @@ const Time = (props) => {
                 <div data-for={id} data-tip className={'time' + (red ? ' red' : '')}>
                     {timeOutput}
                 </div>
-                <ReactTooltip id={id} getContent={() => formatTooltip(tooltipData, id)} />
+                <ReactTooltip place="top" type="dark" effect="solid" id={id} getContent={() => formatTooltip(tooltipData, id)} />
             </React.Fragment>
         );
     }
 
-    return <div className={'time' + (red ? ' red' : '')}>{timeOutput}</div>;
+    return (
+        <div className={'time' + (red ? ' red' : '')}>
+            {timeOutput}
+            {progressInfo && <ProgressBar percent={progressInfo.percent} />}
+        </div>
+    );
 };
+
+function ProgressBar(props) {
+    return (
+        <div className="progress">
+            <span>{props.percent}%</span>
+            <div style={{ width: `${props.percent}%` }} />
+        </div>
+    );
+}
 
 export default Time;

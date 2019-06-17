@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
+import TimeInStatus from './TimeInStatus.jsx';
 import { ALERT_SYMBOL, FLAG_SYMBOL, KEYTASK_SYMBOL } from '../../utils/constants.js';
 
 const Status = (props) => {
@@ -31,7 +32,8 @@ const Status = (props) => {
                 {keyTaskIcon}
                 {flagsIcon}
             </div>
-            <ReactTooltip />
+            <ReactTooltip place="top" type="dark" effect="solid" />
+            {props.info.status && <TimeInStatus issueId={props.info.id} status={props.info.status} />}
         </div>
     );
 };

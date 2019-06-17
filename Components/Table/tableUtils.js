@@ -7,7 +7,7 @@ function getTooltipTimeData(taskArray, filterBy) {
 }
 
 /**
- * Sort callback method to sort by Status
+ * Sort callback method to sort by Status (Alphabetical sort)
  */
 function sortByStatus(valA, valB) {
     const a = valA.toLowerCase();
