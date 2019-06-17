@@ -59,7 +59,6 @@ function mapToUsefulData(issue) {
 
         // TASK DESCRIPTION
         // taskDescription: fields.description, // Excluding this from the API query for now.
-        // TODO: attachments?
 
         // RELATED BY/TO
         issueLinks: fields.issuelinks, // [{ id, outwardIssue/inwardIssue: { fields, id, key, type:{ name } } }]
@@ -254,17 +253,24 @@ function propertyCheck(property) {
     return property ? property : '';
 }
 
-const getFetchOptions = () => {
+const getFetchOptions = (options = []) => {
     const headers = new Headers();
+
     headers.append('Access-Control-Allow-Credentials', 'true');
     headers.append('Authorization', authorizationValue);
 
-    return {
+    const config = {
         method: 'GET',
         headers: headers,
         credentials: 'include'
     };
-} 
+
+    if (options.length) {
+        options.forEach((option) => (config[option[0]] = option[1]));
+    }
+
+    return config;
+};
 
 /**
  * Makes an API call to JIRA to get full Jira task information.
@@ -272,11 +278,10 @@ const getFetchOptions = () => {
  * returns - Javascript Object with Jira Task information.
  */
 function getJiraTaskById(taskId) {
-
     return fetch(jiraApiUrlByIssue + taskId, getFetchOptions())
         .then((data) => data.json())
         .then(mapToUsefulData)
-        .catch(console.error);
+        .catch((error) => console.error(error.message));
 }
 
 export { gatherAllTasks, mapToUsefulData, getFetchOptions };

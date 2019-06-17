@@ -6,13 +6,7 @@ import SubTable from './SubTable.jsx';
 import Time from './Time.jsx';
 import ViewSelector from './ViewSelector.jsx';
 import { COLUMN_TYPES, UNASSIGNED, VIEW_TYPES, WARNING_SYMBOL } from '../../utils/constants.js';
-import {
-    alphabeticalSortPinnedValue,
-    getTooltipTimeData,
-    sortByStatus,
-    sortByTaskNumber,
-    sortByTime
-} from './tableUtils.js';
+import { alphabeticalSortPinnedValue, getTooltipTimeData, sortByStatus, sortByTaskNumber, sortByTime } from './tableUtils.js';
 import { flattenDeep, storageAvailable, titleCase } from '../../utils/utils.js';
 
 /**
@@ -51,6 +45,7 @@ class Table extends React.Component {
     componentDidMount() {
         // Get initial state for viewType from localStorage if it exists.
         let initialViewType;
+
         if (
             storageAvailable &&
             window.localStorage.lpTimeRemainingViewType &&
@@ -263,7 +258,9 @@ class Table extends React.Component {
                                 Object.values(this.resourceAccumulator([data])).reduce((total, value) => {
                                     return total + value;
                                 }, 0),
-                            Cell: (props) => <Time time={props.value} />,
+                            Cell: (props) => {
+                                return <Time time={props.value} progressInfo={props.original.timeProps.aggregateProgress} />;
+                            },
                             Footer: () => {
                                 return (
                                     <Time
