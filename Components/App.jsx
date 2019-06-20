@@ -1,14 +1,73 @@
 import Error from './Error.jsx';
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useEffect, useMemo, useReducer } from 'react';
 import SearchBar from './SearchBar.jsx';
 import Table from './Table/Table.jsx';
-import TimeInStatusContext from '../contexts/TimeInStatusContext.js';
 import { jiraApiUrl, lampstrackUrl } from '../utils/urls.js';
 import { mapToUsefulData, gatherAllTasks, getFetchOptions } from '../utils/apiUtils.js';
 import { storageAvailable } from '../utils/utils.js';
 
 function EmptyNotification() {
     return { message: '', items: [] };
+}
+
+const initialAppState = {
+    isLoading: true,
+    hasError: false,
+    data: undefined,
+    hasHad401: false,
+    notification: new EmptyNotification(),
+    action: {
+        type: undefined
+    },
+    jiraTasksAbortController: new AbortController()
+};
+
+const ACTIONS = {
+    FETCH_START: 'FETCH_START',
+    FETCH_SUCCESS: 'FETCH_SUCCESS',
+    FETCH_FAIL: 'FETCH_FAIL',
+    FETCH_401: 'FETCH_401',
+    FETCH_DETACH: 'FETCH_DETACH'
+};
+
+function jiraFetchReducer(state, action) {
+    switch (action.type) {
+        case ACTIONS.FETCH_START:
+            return {
+                ...state,
+                isLoading: true,
+                hasError: false,
+                notification: new EmptyNotification()
+            };
+        case ACTIONS.FETCH_SUCCESS:
+            return {
+                ...state,
+                isLoading: false,
+                hasError: false,
+                data: action.payload,
+                jiraTasksAbortController: new AbortController()
+            };
+        case ACTIONS.FETCH_FAIL:
+            return {
+                ...state,
+                isLoading: false,
+                hasError: true,
+                notification: action.payload,
+                jiraTasksAbortController: new AbortController()
+            };
+        case ACTIONS.FETCH_401:
+            return {
+                ...state,
+                hasHad401: true
+            };
+        case ACTIONS.FETCH_DETACH:
+            return {
+                ...state,
+                jiraTasksAbortController: new AbortController()
+            };
+        default:
+            return new Error();
+    }
 }
 
 function getInitialQuery() {
@@ -28,25 +87,12 @@ function getInitialQuery() {
 }
 
 export default function App({ appWidth }) {
-    // TODO: group some of this state into useReducer?
-    console.count('APP Render');
-    const [issues, updateIssues] = useState();
-    const [isLoading, updateLoading] = useState(true);
-
     const initialSearchString = useMemo(getInitialQuery, []);
-    const [hasHad401, updateHasHad401] = useState(false);
-    const [hasError, updateErrorStatus] = useState(false);
-    const [notification, updateNotifications] = useState(new EmptyNotification());
 
-    const [jiraTasksAbortController, updatejiraTasksAbortController] = useState(new AbortController());
-
-    const timeInStatusContext = useContext(TimeInStatusContext);
+    const [appState, dispatch] = useReducer(jiraFetchReducer, initialAppState);
 
     function fetchJiraTasks(searchQuery, abortController) {
-        updateLoading(true);
-        updateErrorStatus(false);
-        updateNotifications(new EmptyNotification());
-        updateIssues(undefined);
+        dispatch({ type: ACTIONS.FETCH_START });
 
         const signal = abortController.signal;
         const encodedSearchQuery = window.encodeURIComponent(searchQuery);
@@ -63,52 +109,42 @@ export default function App({ appWidth }) {
                 return gatherAllTasks(jiraData.issues.map(mapToUsefulData));
             })
             .then((formattedIssues) => {
-                updateIssues(formattedIssues);
-                timeInStatusContext.clearTimeInStatus();
-                updatejiraTasksAbortController(new AbortController());
-                updateLoading(false);
+                dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: formattedIssues });
             })
             .catch((err) => {
                 console.error(err);
                 const requestMessage = err.ok ? 'There was a problem getting a response.' : `${err.status} ${err.statusText}.`;
+                dispatch({ type: ACTIONS.FETCH_FAIL, payload: requestMessage });
 
-                updateLoading(false);
-                updateIssues(undefined);
-
-                updateErrorStatus(false);
-                updateNotifications({
-                    message: `${requestMessage}\n Please check your JQL query and/or try again.`,
-                    items: []
-                });
-                updatejiraTasksAbortController(new AbortController());
-                updateHasHad401(err.status === 401 || hasHad401);
+                if (err.status === 401) {
+                    dispatch({ type: ACTIONS.FETCH_401 });
+                }
             });
     }
 
     useEffect(() => {
-
         if (initialSearchString.length) {
-            fetchJiraTasks(initialSearchString, jiraTasksAbortController);
+            fetchJiraTasks(initialSearchString, appState.jiraTasksAbortController);
         }
 
         return () => {
-            jiraTasksAbortController.abort();
-            updatejiraTasksAbortController(new AbortController());
+            appState.jiraTasksAbortController.abort();
+            dispatch({ type: ACTIONS.FETCH_DETACH });
         };
-    }, []);
+    }, [initialSearchString]);
 
     let renderComponent;
 
     // show errors, otherwise loading/table
-    if (hasError) {
-        renderComponent = <Error message={notification.message} permissions={hasHad401} />;
+    if (appState.hasError) {
+        renderComponent = <Error message={appState.notification.message} permissions={appState.hasHad401} />;
     } else {
-        renderComponent = isLoading ? <div className="loader" /> : <Table issues={issues} appWidth={appWidth} lampstrackUrl={lampstrackUrl} />;
+        renderComponent = appState.isLoading ? <div className="loader" /> : <Table issues={appState.data} appWidth={appWidth} lampstrackUrl={lampstrackUrl} />;
     }
 
     return (
         <React.Fragment>
-            <SearchBar abortController={jiraTasksAbortController} initialSearchString={initialSearchString} submitCallback={fetchJiraTasks} />
+            <SearchBar abortController={appState.jiraTasksAbortController} initialSearchString={initialSearchString} submitCallback={fetchJiraTasks} />
             {renderComponent}
         </React.Fragment>
     );

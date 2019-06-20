@@ -2,9 +2,9 @@ import { createContext } from 'react';
 
 const TimeInStatusContext = createContext({
     /* bunch of key: value pairs. */
-    updateTimeInStatus: () => {},
     clearTimeInStatus: () => {},
-    loadedDate: new Date()
+    loadedDate: new Date(),
+    updateTimeInStatus: () => {}
 });
 
 export default TimeInStatusContext;

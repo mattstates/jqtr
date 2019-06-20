@@ -152,7 +152,7 @@ class Table extends React.Component {
             case COLUMN_TYPES.INDEX:
                 return totalWidth * 0.03;
             case COLUMN_TYPES.RESOURCEGROUP:
-                return totalWidth * (largeResourceList ? 0.5 : 0.4) / resourceCount;
+                return (totalWidth * (largeResourceList ? 0.5 : 0.4)) / resourceCount;
             case COLUMN_TYPES.STATUS:
                 return totalWidth * 0.125;
             case COLUMN_TYPES.TOTALTIME:

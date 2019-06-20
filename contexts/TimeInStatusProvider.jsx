@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import TimeInStatusContext from './TimeInStatusContext.js';
 
 const TimeInStatusProvider = ({ children }) => {
-
     const updateTimeInStatus = ({ issueId, timeInStatus }) => {
         updateStateData((prevState) => {
             return {
@@ -22,9 +21,9 @@ const TimeInStatusProvider = ({ children }) => {
 
     const timeInStatusState = {
         /* bunch of key: value pairs. */
-        updateTimeInStatus,
         clearTimeInStatus,
-        loadedDate: new Date()
+        loadedDate: new Date(),
+        updateTimeInStatus
     };
 
     const [timeInStatusData, updateStateData] = useState(timeInStatusState);

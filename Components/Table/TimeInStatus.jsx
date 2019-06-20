@@ -7,11 +7,11 @@ import { jiraApiUrlByIssue } from '../../utils/urls.js';
 
 function TimeInStatus({ issueId, status }) {
     const timeInStatusContext = useContext(TimeInStatusContext);
-    // console.log(timeInStatusContext);
-    console.count('TimeInStatus Render')
+
     useEffect(() => {
-        if (timeInStatusContext[issueId]) {return () => {};}
-        console.count('TimeInStatus FETCH')
+        if (timeInStatusContext[issueId]) {
+            return () => {};
+        }
 
         const abortController = new window.AbortController();
         const signal = abortController.signal;
@@ -24,7 +24,7 @@ function TimeInStatus({ issueId, status }) {
         return () => {
             abortController.abort();
         };
-    }, [issueId, status]);
+    }, [timeInStatusContext[issueId]]);
 
     return timeInStatusContext[issueId] ? <span className="daysInStatus">{timeInStatusContext[issueId]}</span> : <HorizontalLoader />;
 }
