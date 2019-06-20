@@ -131,7 +131,7 @@ export default function App({ appWidth }) {
             appState.jiraTasksAbortController.abort();
             dispatch({ type: ACTIONS.FETCH_DETACH });
         };
-    }, [initialSearchString]);
+    }, []);
 
     let renderComponent;
 
