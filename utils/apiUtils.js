@@ -5,6 +5,7 @@ import { authorizationValue, jiraApiUrlByIssue } from '../utils/urls.js';
  * Initial issue mapping of the raw response from Jira.
  * Code is mostly organized in the same way as a Jira task on lampstrack.
  */
+// eslint-disable-next-line complexity
 function mapToUsefulData(issue) {
     const { fields } = issue;
 

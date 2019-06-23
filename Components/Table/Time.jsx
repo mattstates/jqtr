@@ -20,9 +20,7 @@ function concatenateTimeValues(tooltipPerson, includeTime = false) {
     return `${tooltipPerson.assignee} ${tooltipPerson.needsEstimate ? WARNING_SYMBOL : time}`;
 }
 
-const Time = (props) => {
-    const { tooltipData, time, warning, id, red, progressInfo } = props;
-
+const Time = ({ tooltipData, time, warning, id, red, progressInfo }) => {
     let timeOutput = null;
 
     if (typeof time === 'number') {
@@ -59,11 +57,11 @@ const Time = (props) => {
     );
 };
 
-function ProgressBar(props) {
+function ProgressBar({ percent }) {
     return (
         <div className="progress">
-            <span>{props.percent}%</span>
-            <div style={{ width: `${props.percent}%` }} />
+            <span>{percent}%</span>
+            <div style={{ width: `${percent}%` }} />
         </div>
     );
 }

@@ -5,40 +5,39 @@ import Time from './Time.jsx';
 import { COLUMN_TYPES, VIEW_TYPES } from '../../utils/constants.js';
 import { getTooltipTimeData } from './tableUtils.js';
 
-export default (props) => {
-    const { viewType } = props;
+export default ({ viewType, lampstrackUrl, columnWidths, resourceList, data }) => {
     const columns = [
         {
             // PLACEHOLDER - KEEPS COLUMNS ALIGNED.
             accessor: 'null',
             id: 'null',
             sortable: false,
-            width: props.columnWidths[COLUMN_TYPES.INDEX]
+            width: columnWidths[COLUMN_TYPES.INDEX]
         },
 
         {
             // INITIATIVE
-            accessor: (data) => (
+            accessor: ({ taskNumber, taskTitle }) => (
                 <React.Fragment>
                     <span className="initiative">
                         <span>
-                            {data.taskNumber}
+                            {taskNumber}
                             {': '}
                         </span>
-                        <a href={`${props.lampstrackUrl}${data.taskNumber}`}>{data.taskTitle}</a>
+                        <a href={`${lampstrackUrl}${taskNumber}`}>{taskTitle}</a>
                     </span>
                 </React.Fragment>
             ),
             id: 'taskTitle',
-            minWidth: props.columnWidths[COLUMN_TYPES.VIEWTYPE],
+            minWidth: columnWidths[COLUMN_TYPES.VIEWTYPE],
             style: { minHeight: 45 }
         },
 
         {
             // STATUS
-            Cell: (data) => <Status info={data.original} />,
+            Cell: ({ original }) => <Status info={original} />,
             accessor: 'status',
-            maxWidth: props.columnWidths[COLUMN_TYPES.STATUS],
+            maxWidth: columnWidths[COLUMN_TYPES.STATUS],
             style: { cursor: 'default' }
         },
 
@@ -46,42 +45,42 @@ export default (props) => {
             // TOTAL TIME PLACEHOLDER - KEEPS COLUMNS ALIGNED.
             accessor: 'null',
             id: 'null',
-            minWidth: props.columnWidths[COLUMN_TYPES.TOTALTIME],
+            minWidth: columnWidths[COLUMN_TYPES.TOTALTIME],
             sortable: false
         },
 
-        ...props.resourceList.map((resource) => {
+        ...resourceList.map((resource) => {
             return {
-                accessor: (data) => {
-                    if (data.resourceQueue === resource[0] && !data.timeProps.needsEstimate) {
-                        return data.timeProps.timeEstimate;
-                    } else if (data.resourceQueue === resource[0] && data.timeProps.needsEstimate) {
+                accessor: ({ resourceQueue, timeProps }) => {
+                    if (resourceQueue === resource[0] && !timeProps.needsEstimate) {
+                        return timeProps.timeEstimate;
+                    } else if (resourceQueue === resource[0] && timeProps.needsEstimate) {
                         return null;
                     }
                     return undefined;
                 },
-                Cell: (data) => {
-                    return data.value === undefined ? null : (
+                Cell: ({ value, original }) => {
+                    return value === undefined ? null : (
                         <Time
-                            time={data.value}
-                            id={data.original.id}
-                            tooltipData={viewType === VIEW_TYPES.INITIATIVE ? getTooltipTimeData([data.original], resource[0]) : null}
+                            time={value}
+                            id={original.id}
+                            tooltipData={viewType === VIEW_TYPES.INITIATIVE ? getTooltipTimeData([original], resource[0]) : null}
                         />
                     );
                 },
                 id: resource[0],
-                maxWidth: props.columnWidths[COLUMN_TYPES.RESOURCEGROUP]
+                maxWidth: columnWidths[COLUMN_TYPES.RESOURCEGROUP]
             };
         })
     ];
 
-    return props.data.length ? (
+    return data.length ? (
         <ReactTable
-            data={props.data}
+            data={data}
             columns={columns}
             showPaginationBottom={false}
             showPageSizeOptions={false}
-            defaultPageSize={props.data.length}
+            defaultPageSize={data.length}
             className="-striped subtable"
             resizable={false}
         />
