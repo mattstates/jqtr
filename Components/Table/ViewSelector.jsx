@@ -1,15 +1,15 @@
 import React from 'react';
 import { titleCase } from '../../utils/utils.js';
-export default (props) => {
+export default ({ views, currentView, clickHandler }) => {
     return (
         <div className="viewSelector">
-            {props.views.map((view, index) => {
+            {views.map((view, index) => {
                 return (
                     <div
                         key={index}
-                        className={`${view}${props.currentView === view ? ' active' : ''}`}
+                        className={`${view}${currentView === view ? ' active' : ''}`}
                         title={`${titleCase(view)} View`}
-                        onClick={props.currentView === view ? null : props.clickHandler.bind(null, view)}
+                        onClick={currentView === view ? null : clickHandler.bind(null, view)}
                     />
                 );
             })}
