@@ -1,6 +1,6 @@
 {
     "parser": "babel-eslint",
-    "plugins": ["react", "react-hooks"],
+    "plugins": ["jest", "react", "react-hooks"],
     "extends": ["eslint:recommended", "plugin:react/recommended"],
     "rules": {
         "no-alert": 2,
@@ -242,12 +242,18 @@
         "yoda": [0, "never"],
         "react/display-name": 0,
         "react/prop-types": 0,
-        "react/no-unescaped-entities": 0
+        "react/no-unescaped-entities": 0,
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/prefer-to-have-length": "warn",
+        "jest/valid-expect": "error"
     },
     "env": {
         "node": true,
         "es6": true,
-        "browser": true
+        "browser": true,
+        "jest/globals": true
     },
     "parserOptions": {
         "ecmaVersion": 6,
