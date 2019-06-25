@@ -3,7 +3,7 @@
   "jest": {
     "verbose": true
   },
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Jira Query Time Remaining tool for Confluence",
   "main": "index.js",
   "scripts": {
