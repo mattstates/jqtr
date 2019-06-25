@@ -1,5 +1,8 @@
 {
   "name": "jira-query-time-remaining",
+  "jest": {
+    "verbose": true
+  },
   "version": "2.0.0",
   "description": "Jira Query Time Remaining tool for Confluence",
   "main": "index.js",
@@ -12,15 +15,15 @@
   "author": "Matt States",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-react": "^7.0.0",
     "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.6",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-react": "^6.24.1",
     "eslint": "^4.19.1",
-    "eslint-plugin-react": "^7.13.0",
-    "eslint-plugin-react-hooks": "^1.6.0",
+    "eslint-plugin-react": "^7.14.2",
+    "eslint-plugin-react-hooks": "^1.6.1",
+    "jest": "^24.8.0",
     "node-sass": "^4.12.0",
     "parcel-bundler": "^1.12.3",
     "prettier": "^1.18.2"
