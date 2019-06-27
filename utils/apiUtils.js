@@ -107,7 +107,7 @@ function mapToUsefulData(issue) {
              */
             sprintInfo: (() => {
                 if (!fields.customfield_10281) {
-                    console.warn(`No sprint info for ${issue.key}: ${fields.summary}`);
+                    // console.warn(`No sprint info for ${issue.key}: ${fields.summary}`);
                     return {};
                 }
                 fields.customfield_10281[0]
@@ -236,16 +236,18 @@ function personHelper(roleField) {
 function findMissingParentTasks(collection) {
     return Array.from(
         new Set(
-            collection.filter((task) => task.isSubtask).reduce((prev, curr) => {
-                if (
-                    collection.find((item) => {
-                        return item.id === curr.parent.id;
-                    }) === undefined
-                ) {
-                    return [...prev, curr.parent.id];
-                }
-                return prev;
-            }, [])
+            collection
+                .filter((task) => task.isSubtask)
+                .reduce((prev, curr) => {
+                    if (
+                        collection.find((item) => {
+                            return item.id === curr.parent.id;
+                        }) === undefined
+                    ) {
+                        return [...prev, curr.parent.id];
+                    }
+                    return prev;
+                }, [])
         )
     );
 }
@@ -285,4 +287,4 @@ function getJiraTaskById(taskId) {
         .catch((error) => console.error(error.message));
 }
 
-export { gatherAllTasks, mapToUsefulData, getFetchOptions };
+export { gatherAllTasks, mapToUsefulData, getFetchOptions, findMissingParentTasks, mapSubtasksToParents };
