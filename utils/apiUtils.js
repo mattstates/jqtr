@@ -259,8 +259,9 @@ function propertyCheck(property) {
 const getFetchOptions = (options = []) => {
     const headers = new Headers();
 
-    headers.append('Access-Control-Allow-Credentials', 'true');
-    headers.append('Authorization', authorizationValue);
+    // Use if calls come from outside of Confluence.
+    // headers.append('Access-Control-Allow-Credentials', 'true');
+    // headers.append('Authorization', authorizationValue);
 
     const config = {
         method: 'GET',

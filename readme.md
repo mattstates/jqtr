@@ -73,7 +73,6 @@ Please feel free to contribute.
 * Use React-Tooltip to style hover data
 * Update NPM dependencies
 * Extract the App component and convert to use React hooks
-* Use the deployment dashboard jira admin credential to fetch data
 * Reduce the API data requested to increase speed
 * Add a percent-complete component
 * Display the duration a task has been in its current status
