@@ -1,10 +1,15 @@
-function printHoursPretty(duration) {
+const HOUR_IN_SECONDS = 3600;
+
+function printHoursPretty(seconds) {
     // Ported from original JQTR
-    duration = duration / 3600;
-    const hours = Math.floor(duration) || 0;
-    const minutes = Math.floor(((duration * 3600) % 3600) / 60) || 0;
-    const prettyTime = (hours > 0 ? hours + 'h' : '') + (minutes > 0 ? ' ' + minutes + 'm' : '');
-    return prettyTime || '0h';
+
+    let hours = Math.floor(seconds / HOUR_IN_SECONDS);
+    hours = hours > 0 ? `${hours}h` : '';
+
+    let minutes = Math.floor(seconds % HOUR_IN_SECONDS / 60);
+    minutes = minutes > 0 ? `${minutes}m`: '';
+
+    return (`${hours}${hours ? ' ' : ''}${minutes}`) || '0h';
 }
 
 const storageAvailable = ((type) => {
