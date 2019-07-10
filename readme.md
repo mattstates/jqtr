@@ -78,3 +78,4 @@ Please feel free to contribute.
 * Display the duration a task has been in its current status
 * Show an indication when a total time column has tasks that don't have an estimate
 * Add the ability to write and run unit tests (Jest)
+* Fixed rounding issue in printHoursPretty fn'

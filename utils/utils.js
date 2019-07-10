@@ -9,7 +9,7 @@ function printHoursPretty(seconds) {
     let minutes = Math.floor(seconds % HOUR_IN_SECONDS / 60);
     minutes = minutes > 0 ? `${minutes}m`: '';
 
-    return (`${hours}${hours ? ' ' : ''}${minutes}`) || '0h';
+    return (`${hours}${hours && minutes ? ' ' : ''}${minutes}`) || '0h';
 }
 
 const storageAvailable = ((type) => {
