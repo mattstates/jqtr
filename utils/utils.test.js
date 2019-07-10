@@ -23,7 +23,10 @@ describe('printHoursPretty', () => {
     });
 
     test('Hours and Minutes are separated by a space', () => {
-        expect(printHoursPretty(3660).indexOf(' ')).toBeGreaterThan(1);
+        const output = printHoursPretty(3660);
+        expect(output.indexOf(' ')).toBeGreaterThan(1);
+        expect(output.indexOf('h')).toBeGreaterThan(0);
+        expect(output.indexOf('m')).toBeGreaterThan(0);
     })
 
     test('Negative input returns 0h', () => {
