@@ -27,7 +27,7 @@ const Time = ({ tooltipData, time, warning, id, red, progressInfo }) => {
         timeOutput = (
             <span className="time">
                 {printHoursPretty(time)}
-                {warning ? ` ${WARNING_SYMBOL}` : null}
+                {warning || red ? ` ${WARNING_SYMBOL}` : null}
             </span>
         );
     } else if (time === null) {
@@ -38,23 +38,16 @@ const Time = ({ tooltipData, time, warning, id, red, progressInfo }) => {
         );
     }
 
-    if (tooltipData) {
-        return (
-            <React.Fragment>
-                <div data-for={id} data-tip className={'time' + (red ? ' red' : '')}>
-                    {timeOutput}
-                </div>
-                <ReactTooltip place="top" type="dark" effect="solid" id={id} getContent={() => formatTooltip(tooltipData, id)} />
-            </React.Fragment>
-        );
-    }
-
     return (
-        <div className={'time' + (red ? ' red' : '')}>
-            {timeOutput}
-            {progressInfo && <ProgressBar percent={progressInfo.percent} />}
-        </div>
+        <React.Fragment>
+            <div data-for={id} {...tooltipData ? { 'data-tip': '' } : null} className={'time' + (red ? ' red' : '')}>
+                {timeOutput}
+                {progressInfo && <ProgressBar percent={progressInfo.percent} />}
+            </div>
+            {tooltipData && <ReactTooltip place="top" type="dark" effect="solid" id={id} getContent={() => formatTooltip(tooltipData, id)} />}
+        </React.Fragment>
     );
+
 };
 
 function ProgressBar({ percent }) {
