@@ -65,6 +65,7 @@ export default ({ viewType, lampstrackUrl, columnWidths, resourceList, data }) =
                             time={value}
                             id={original.id}
                             tooltipData={viewType === VIEW_TYPES.INITIATIVE ? getTooltipTimeData([original], resource[0]) : null}
+                            progressInfo={original.timeProps.aggregateProgress}
                         />
                     );
                 },
