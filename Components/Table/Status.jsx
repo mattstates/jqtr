@@ -1,3 +1,4 @@
+import './Status.scss';
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
 import TimeInStatus from './TimeInStatus.jsx';

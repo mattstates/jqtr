@@ -1,3 +1,4 @@
+import './Time.scss'
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
 import { WARNING_SYMBOL } from '../../utils/constants.js';
@@ -20,14 +21,14 @@ function concatenateTimeValues(tooltipPerson, includeTime = false) {
     return `${tooltipPerson.assignee} ${tooltipPerson.needsEstimate ? WARNING_SYMBOL : time}`;
 }
 
-const Time = ({ tooltipData, time, warning, id, red, progressInfo }) => {
+const Time = ({ tooltipData, time, warning, id, footerWarning, progressInfo }) => {
     let timeOutput = null;
 
     if (typeof time === 'number') {
         timeOutput = (
             <span className="time">
                 {printHoursPretty(time)}
-                {warning || red ? ` ${WARNING_SYMBOL}` : null}
+                {warning || footerWarning ? ` ${WARNING_SYMBOL}` : null}
             </span>
         );
     } else if (time === null) {
@@ -40,9 +41,9 @@ const Time = ({ tooltipData, time, warning, id, red, progressInfo }) => {
 
     return (
         <React.Fragment>
-            <div data-for={id} {...tooltipData ? { 'data-tip': '' } : null} className={'time' + (red ? ' red' : '')}>
+            <div data-for={id} {...tooltipData ? { 'data-tip': '' } : null} className={'time' + (footerWarning ? ' footerWarning' : '')}>
                 {timeOutput}
-                {progressInfo && <ProgressBar percent={progressInfo.percent} />}
+                {(progressInfo && typeof progressInfo.percent === 'number') && <ProgressBar percent={progressInfo.percent} />}
             </div>
             {tooltipData && <ReactTooltip place="top" type="dark" effect="solid" id={id} getContent={() => formatTooltip(tooltipData, id)} />}
         </React.Fragment>
@@ -51,10 +52,12 @@ const Time = ({ tooltipData, time, warning, id, red, progressInfo }) => {
 };
 
 function ProgressBar({ percent }) {
+    const percentage = `${percent}%`;
+
     return (
         <div className="progress">
-            <span>{percent}%</span>
-            <div style={{ width: `${percent}%` }} />
+            <span title={percentage}>{percentage}</span>
+            <div style={{ width: percentage }} />
         </div>
     );
 }

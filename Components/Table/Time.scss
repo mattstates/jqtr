@@ -1,0 +1,38 @@
+.time {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    text-align: center;
+}
+
+.progress {
+    background: #adadad;
+    display: flex;
+    justify-content: center;
+    max-height: 10px;
+    min-height: 10px;
+    position: relative;
+    text-align: center;
+    div {
+        background: #656565;
+        left:0;
+        max-height: 10px;
+        min-height: 10px;
+        position: absolute;
+        top: 0;
+        z-index: 1;
+    }
+    span {
+        color: #fff;
+        font-size: 8px;
+        min-width: 20px;
+        padding: 0 2px;
+        position: relative;
+        z-index: 2;
+    }
+}
+
+.footerWarning {
+    color: red;
+}

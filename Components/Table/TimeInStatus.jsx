@@ -1,3 +1,4 @@
+import './TimeInStatus.scss';
 import HorizontalLoader from './../Loaders/HorizontalLoader.jsx';
 import React, { useContext, useEffect } from 'react';
 import TimeInStatusContext from '../../contexts/TimeInStatusContext.js';
@@ -10,7 +11,7 @@ function TimeInStatus({ issueId, status }) {
 
     useEffect(() => {
         if (timeInStatusContext[issueId]) {
-            return () => {};
+            return () => { };
         }
 
         const abortController = new window.AbortController();

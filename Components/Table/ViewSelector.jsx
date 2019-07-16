@@ -1,3 +1,4 @@
+import './ViewSelector.scss';
 import React from 'react';
 import { titleCase } from '../../utils/utils.js';
 export default ({ views, currentView, clickHandler }) => {

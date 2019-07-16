@@ -1,0 +1,24 @@
+.expandedEnabled {
+    border: 1px outset #ddd;
+    display: flex;
+    flex-direction: column;
+    height: 26px;
+    justify-content: center;
+    pointer-events: all;
+    position: relative;
+    width: 26px;
+    &.expandedIndex {
+        background-color: #efefef;
+        border-style: inset;
+    }
+}
+
+.closedIndex {
+    min-width: 24px;
+}
+
+span.initiative {
+    align-items: center;
+    display: flex;
+    span { margin: 0 6px; min-width: fit-content; }
+}

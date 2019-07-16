@@ -1,0 +1,22 @@
+/* https://stephanwagner.me/only-css-loading-spinner */
+.loader:before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    margin-top: -15px;
+    margin-left: -15px;
+    border-radius: 50%;
+    border: 6px solid #ccc;
+    border-top-color: #07d;
+    animation: spinner .8s linear infinite;
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
