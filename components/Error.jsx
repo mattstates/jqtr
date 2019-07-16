@@ -1,3 +1,4 @@
+import './Error.scss';
 import React from 'react';
 import ERROR_SYMBOL from '../utils/constants.js';
 

@@ -1,0 +1,23 @@
+.viewSelector {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 65px;
+    div {
+        border: 1px outset #ddd;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        height: 26px;
+        justify-content: center;
+        pointer-events: all;
+        position: relative;
+    }
+    div.active { 
+        background-color: #efefef;
+        border-style: inset;
+        cursor: default;
+    }
+    div.initiative:before { content: '💡' }
+    div.assignee:before { content: '👷' }
+}

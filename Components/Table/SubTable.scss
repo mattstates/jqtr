@@ -1,0 +1,10 @@
+.subtable {
+    border-bottom: 1px solid #656565;
+    border-left: 0;
+    border-right: 1px solid #656565;
+    border-top: 0;
+    // React Table Override.
+    .rt-thead.-header {
+        z-index: 1;
+    }
+}

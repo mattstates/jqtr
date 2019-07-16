@@ -1,0 +1,42 @@
+// React-Table Overrides
+.rt-resizable-header-content {
+    font-weight: 700;
+}
+
+.rt-tfoot {
+    .rt-tr:hover {
+        background: #fff;
+    }
+    .rt-td {
+        font-weight: 700;
+    }
+}
+
+.rt-td {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.rt-tr:hover {
+    background-color: rgba(255, 244, 95, 0.2);
+}
+
+.ReactTable .rt-table {
+    overflow: inherit;
+}
+
+.rt-thead.-header {
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    &:hover .rt-tr {
+        background: rgba(255, 255, 255, 0);
+    }
+    .rt-th {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+}

@@ -1,3 +1,4 @@
+import './SearchBar.scss';
 import React, { useState, useEffect, useContext } from 'react';
 import TimeInStatusContext from '../contexts/TimeInStatusContext.js';
 import { storageAvailable } from '../utils/utils.js';

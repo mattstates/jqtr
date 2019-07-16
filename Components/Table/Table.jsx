@@ -1,3 +1,5 @@
+import './Table.scss';
+import './ReactTable.scss';
 import Error from '../Error.jsx';
 import React from 'react';
 import ReactTable from 'react-table';
@@ -189,7 +191,7 @@ class Table extends React.Component {
                                 return 'index';
                             },
                             expander: true,
-                            Expander: function({ isExpanded, ...args }) {
+                            Expander: function ({ isExpanded, ...args }) {
                                 const { viewIndex, original } = args;
                                 const enabled = Boolean(original.subtasks.length);
                                 const classes = [isExpanded ? 'expandedIndex' : 'closedIndex', enabled ? 'expandedEnabled' : ''];
@@ -238,8 +240,8 @@ class Table extends React.Component {
                                         {WARNING_SYMBOL}
                                     </span>
                                 ) : (
-                                    <Status info={data} />
-                                ),
+                                        <Status info={data} />
+                                    ),
                             Footer: '',
                             Header: 'Status',
                             id: 'status',
@@ -287,7 +289,7 @@ class Table extends React.Component {
                                 },
                                 Footer: (info) => (
                                     <Time
-                                        red={this.showFooterWarning(
+                                        footerWarning={this.showFooterWarning(
                                             flattenDeep(info.data.map((item) => [item._original, ...item._original.subtasks])),
                                             resource[0]
                                         )}
@@ -310,7 +312,7 @@ class Table extends React.Component {
                                 return 'index';
                             },
                             expander: true,
-                            Expander: function({ isExpanded, ...args }) {
+                            Expander: function ({ isExpanded, ...args }) {
                                 const { viewIndex, original } = args;
                                 const enabled = Boolean(original[1].length);
                                 const classes = [isExpanded ? 'expandedIndex' : 'closedIndex', enabled ? 'expandedEnabled' : ''];
@@ -391,7 +393,7 @@ class Table extends React.Component {
                                 },
                                 Footer: (info) => (
                                     <Time
-                                        red={this.showFooterWarning(flattenDeep(info.data.map((item) => item._original[1])), resource[0])}
+                                        footerWarning={this.showFooterWarning(flattenDeep(info.data.map((item) => item._original[1])), resource[0])}
                                         time={resource[1] || 0}
                                     />
                                 ),
