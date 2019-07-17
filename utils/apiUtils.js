@@ -91,7 +91,8 @@ function mapToUsefulData(issue) {
             originalEstimate: fields.timeoriginalestimate, // JIRA-Estimatd
             timeEstimate: fields.timeestimate,
             timeRemaining: fields.timeestimate,
-            needsEstimate: fields.timeestimate === null
+            needsEstimate: fields.timeestimate === null,
+            progress: fields.progress
         },
 
         // TODO: Add to sprint property.

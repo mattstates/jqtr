@@ -74,7 +74,7 @@ Please feel free to contribute.
 * Update NPM dependencies
 * Extract the App component and convert to use React hooks
 * Reduce the API data requested to increase speed
-* Add a percent-complete component
+* Add a percent-complete component (Parent level shows aggregate percent complete, sub tables show task level percent complete.)
 * Display the duration a task has been in its current status
 * Show an indication when a total time column has tasks that don't have an estimate
 * Add the ability to write and run unit tests (Jest)
