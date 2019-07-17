@@ -1,59 +1,27 @@
-
 .horizontalLoader {
-    color: #222;
-    font-family: 'Arial', sans-serif;
-    // font-size: 10px;
-    height: 8px;
-    letter-spacing: 2px;
-    margin: 5px auto;
-    text-align: center;
-    text-transform: uppercase;
-    width: 100%;
-  
-  
-  .line {
-    width: 1px;
-    height: 8px;
-    background: #222;
-    margin: 0 1px;
-    display: inline-block;
-    animation: opacity-1 1000ms infinite ease-in-out;
-  }
-  
+  height: 4px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: #ddd;
 }
-  
-  .horizontalLoader .line-1 { animation-delay: 800ms; }
-  .horizontalLoader .line-2 { animation-delay: 600ms; }
-  .horizontalLoader .line-3 { animation-delay: 400ms; }
-  .horizontalLoader .line-4 { animation-delay: 200ms; }
-  .horizontalLoader .line-6 { animation-delay: 200ms; }
-  .horizontalLoader .line-7 { animation-delay: 400ms; }
-  .horizontalLoader .line-8 { animation-delay: 600ms; }
-  .horizontalLoader .line-9 { animation-delay: 800ms; }
-  
-  @keyframes opacity-1 { 
-    0% { 
-      opacity: 1;
-    }
-    50% { 
-      opacity: 0;
-    }
-    100% { 
-      opacity: 1;
-    }  
-  }
-  
-  @keyframes opacity-2 { 
-    0% { 
-      opacity: 1;
-      height: 15px;
-    }
-    50% { 
-      opacity: 0;
-      height: 12px;
-    }
-    100% { 
-      opacity: 1;
-      height: 15px;
-    }  
-  }
+.horizontalLoader:before{
+  display: block;
+  position: absolute;
+  content: "";
+  left: -200px;
+  width: 200px;
+  height: 4px;
+  background-color: #2980b9;
+  animation: horizontalLoading 2s linear infinite;
+}
+
+@keyframes horizontalLoading {
+    from {left: -200px; width: 30%;}
+    50% {width: 30%;}
+    70% {width: 70%;}
+    80% { left: 50%;}
+    95% {left: 120%;}
+    to {left: 100%;}
+}
+
