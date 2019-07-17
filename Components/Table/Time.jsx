@@ -53,11 +53,12 @@ const Time = ({ tooltipData, time, warning, id, footerWarning, progressInfo }) =
 
 function ProgressBar({ percent }) {
     const percentage = `${percent}%`;
+    const leftOffset = `-${100 - percent}%`;
 
     return (
         <div className="progress">
             <span title={percentage}>{percentage}</span>
-            <div style={{ width: percentage }} />
+            <div style={{ left: leftOffset }} />
         </div>
     );
 }
