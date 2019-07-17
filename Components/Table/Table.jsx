@@ -261,10 +261,7 @@ class Table extends React.Component {
                                     return total + value;
                                 }, 0),
                             Cell: (props) => {
-                                const progressData = props.original.subtasks.length ?
-                                    props.original.timeProps.aggregateProgress :
-                                    props.original.timeProps.progress;
-                                return <Time time={props.value} progressInfo={progressData} />;
+                                return <Time time={props.value} progressInfo={props.original.timeProps.aggregateProgress} />;
                             },
                             Footer: () => {
                                 return (

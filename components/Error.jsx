@@ -1,6 +1,6 @@
 import './Error.scss';
 import React from 'react';
-import ERROR_SYMBOL from '../utils/constants.js';
+import { ERROR_SYMBOL } from '../utils/constants.js';
 
 function PermissionIssue() {
     return (

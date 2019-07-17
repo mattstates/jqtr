@@ -8,19 +8,23 @@
 
 .progress {
     background: #adadad;
+    border-radius: 50px;
     display: flex;
     justify-content: center;
     max-height: 10px;
     min-height: 10px;
+    overflow: hidden;
     position: relative;
     text-align: center;
     div {
         background: #656565;
-        left:0;
+        display: block;
+        left: 0;
         max-height: 10px;
         min-height: 10px;
         position: absolute;
         top: 0;
+        width: 100%;
         z-index: 1;
     }
     span {
