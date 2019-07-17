@@ -20,5 +20,12 @@
 span.initiative {
     align-items: center;
     display: flex;
-    span { margin: 0 6px; min-width: fit-content; }
+    img {
+        min-width: 16px;
+    }
+    span {
+        margin: 0 6px;
+        min-width: fit-content;
+        min-width: -moz-max-content;
+     }
 }

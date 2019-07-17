@@ -191,7 +191,7 @@ class Table extends React.Component {
                                 return 'index';
                             },
                             expander: true,
-                            Expander: function ({ isExpanded, ...args }) {
+                            Expander: function({ isExpanded, ...args }) {
                                 const { viewIndex, original } = args;
                                 const enabled = Boolean(original.subtasks.length);
                                 const classes = [isExpanded ? 'expandedIndex' : 'closedIndex', enabled ? 'expandedEnabled' : ''];
@@ -240,8 +240,8 @@ class Table extends React.Component {
                                         {WARNING_SYMBOL}
                                     </span>
                                 ) : (
-                                        <Status info={data} />
-                                    ),
+                                    <Status info={data} />
+                                ),
                             Footer: '',
                             Header: 'Status',
                             id: 'status',
@@ -261,7 +261,10 @@ class Table extends React.Component {
                                     return total + value;
                                 }, 0),
                             Cell: (props) => {
-                                return <Time time={props.value} progressInfo={props.original.timeProps.aggregateProgress} />;
+                                const progressData = props.original.subtasks.length ?
+                                    props.original.timeProps.aggregateProgress :
+                                    props.original.timeProps.progress;
+                                return <Time time={props.value} progressInfo={progressData} />;
                             },
                             Footer: () => {
                                 return (
@@ -312,7 +315,7 @@ class Table extends React.Component {
                                 return 'index';
                             },
                             expander: true,
-                            Expander: function ({ isExpanded, ...args }) {
+                            Expander: function({ isExpanded, ...args }) {
                                 const { viewIndex, original } = args;
                                 const enabled = Boolean(original[1].length);
                                 const classes = [isExpanded ? 'expandedIndex' : 'closedIndex', enabled ? 'expandedEnabled' : ''];
