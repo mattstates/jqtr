@@ -28,12 +28,12 @@ There are two views: Assignee and Initiative.
 You can transpile the code by cloning the repo and running the following commands in the terminal.
 
 ````javascript
-    npm install
-    npm start
+npm install
+npm start
 ````
 or you can run a local dev server environment with
 ````javascript
-    npm run dev
+npm run dev
 ````
 Then you would want to create html tags to link to localhost to request the .js and .css files. *(see the Deployment section below for a similar example of this)*
 
