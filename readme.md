@@ -54,11 +54,11 @@ Then drop the index.css and index.js files into this folder:
 
 Within a Confluence page add a HTML macro and drop this markup into it:
 ```html
-<link rel="stylesheet" href="https://confluence.lampsplus.com:8093/custom/JQTR/index.css">
+<link rel="stylesheet" href="/custom/JQTR/index.css">
 <div id="jqtrapp">
     ...LOADING
 </div>
-<script src="https://confluence.lampsplus.com:8093/custom/JQTR/index.js"></script>
+<script src="/custom/JQTR/index.js"></script>
 ````
 ## Tests
 ````javascript
