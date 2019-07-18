@@ -62,7 +62,7 @@ Within a Confluence page add a HTML macro and drop this markup into it:
 ````
 ## Tests
 ````javascript
-    npm run test
+npm run test
 ````
 
 Please feel free to contribute.
