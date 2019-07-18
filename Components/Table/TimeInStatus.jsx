@@ -11,7 +11,7 @@ function TimeInStatus({ issueId, status }) {
 
     useEffect(() => {
         if (timeInStatusContext[issueId]) {
-            return () => { };
+            return () => {};
         }
 
         const abortController = new window.AbortController();

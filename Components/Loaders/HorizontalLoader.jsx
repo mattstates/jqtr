@@ -1,5 +1,5 @@
-import React from 'react';
 import './Horizontalloader.scss';
+import React from 'react';
 
 export default function HorizontalLoader() {
     return (

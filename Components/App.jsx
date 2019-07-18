@@ -1,7 +1,7 @@
 import Error from './Error.jsx';
+import Loader from './Loaders/Loader.jsx';
 import React, { useEffect, useMemo, useReducer } from 'react';
 import SearchBar from './SearchBar.jsx';
-import Loader from './Loaders/Loader.jsx';
 import Table from './Table/Table.jsx';
 import { jiraApiUrl, lampstrackUrl } from '../utils/urls.js';
 import { mapToUsefulData, gatherAllTasks, getFetchOptions } from '../utils/apiUtils.js';

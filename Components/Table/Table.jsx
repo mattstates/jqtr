@@ -1,5 +1,5 @@
-import './Table.scss';
 import './ReactTable.scss';
+import './Table.scss';
 import Error from '../Error.jsx';
 import React from 'react';
 import ReactTable from 'react-table';
