@@ -45,7 +45,7 @@ You will need a `div` with an id of `jqtrapp` to serve as the React entrypoint
 ## Deployment
 The best way to use this app would be to compile your code changes with
 ````javascript
-    npm run build
+npm run build
 ````
 Then drop the index.css and index.js files into this folder:
 ````
