@@ -1,4 +1,4 @@
-import './Time.scss'
+import './Time.scss';
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
 import { WARNING_SYMBOL } from '../../utils/constants.js';
@@ -41,14 +41,13 @@ const Time = ({ tooltipData, time, warning, id, footerWarning, progressInfo }) =
 
     return (
         <React.Fragment>
-            <div data-for={id} {...tooltipData ? { 'data-tip': '' } : null} className={'time' + (footerWarning ? ' footerWarning' : '')}>
+            <div data-for={id} {...(tooltipData ? { 'data-tip': '' } : null)} className={'time' + (footerWarning ? ' footerWarning' : '')}>
                 {timeOutput}
-                {(progressInfo && typeof progressInfo.percent === 'number') && <ProgressBar percent={progressInfo.percent} />}
+                {progressInfo && typeof progressInfo.percent === 'number' && <ProgressBar percent={progressInfo.percent} />}
             </div>
             {tooltipData && <ReactTooltip place="top" type="dark" effect="solid" id={id} getContent={() => formatTooltip(tooltipData, id)} />}
         </React.Fragment>
     );
-
 };
 
 function ProgressBar({ percent }) {
