@@ -181,7 +181,7 @@ function gatherAllTasks(taskCollection) {
  */
 function mapSubtasksToParents(taskCollection) {
     return taskCollection.reduce((collection, task) => {
-        if (task.isSubtask) {
+        if (task.isSubtask && task.parent) {
             return collection;
         }
 
@@ -195,22 +195,22 @@ function mapSubtasksToParents(taskCollection) {
 
 /**
  * @param {Array} taskCollection - full collection of tasks
- * @param {Array} childArray - a task's .subtasks collection
- * @param {string} primaryKey - the property to identify tasks
+ * @param {Array} childTasksCollection - a task's .subtasks collection
+ * @param {string} key - the property to identify tasks
  * Returns childArray mapped to fully details tasks and filtered to match the jql query results.
  *
  * Normally the tasks inside of a parent's subtasks property comes from Jira without all of the subtask's Jira information.
  * Using this method, the entire collection is passed in and all matching subtasks are replaced
  * with their "full" versions. This is done so every task in the collection will behave more uniformly.
  */
-function groupTasksByKey(taskCollection, childArray, primaryKey) {
-    return childArray
-        .map((childArrayTask) => {
-            const matchedTask = taskCollection.find((parentArrayTask) => parentArrayTask[primaryKey] === childArrayTask[primaryKey]);
+function groupTasksByKey(taskCollection, childTasksCollection, key) {
+    return childTasksCollection
+        .map((childTask) => {
+            const matchedTask = taskCollection.find((task) => task[key] === childTask[key]);
             if (matchedTask) {
                 return matchedTask;
             }
-            console.warn(`The JQL query has omitted a subtask (${childArrayTask.taskNumber}: ${childArrayTask.taskTitle}).`);
+            console.warn(`The JQL query has omitted a subtask (${childTask.taskNumber}: ${childTask.taskTitle}).`);
             return null;
         })
         .filter((subtask) => Boolean(subtask));
@@ -238,12 +238,11 @@ function findMissingParentTasks(collection) {
     return Array.from(
         new Set(
             collection
-                .filter((task) => task.isSubtask)
+                .filter((task) => task.isSubtask && task.parent)
                 .reduce((prev, curr) => {
-                    if (
-                        collection.find((item) => {
-                            return item.id === curr.parent.id;
-                        }) === undefined
+                    if (collection.find((item) => {
+                        return item.id === curr.parent.id;
+                    }) === undefined
                     ) {
                         return [...prev, curr.parent.id];
                     }
