@@ -25,7 +25,7 @@ const storageAvailable = ((type) => {
     }
 })('localStorage');
 
-function titleCase(string) {
+function titleCase(string: string) {
     return string
         .split(' ')
         .map((word) => `${word[0].toUpperCase()}${word.substr(1)}`)
