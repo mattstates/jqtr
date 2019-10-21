@@ -19,7 +19,7 @@ There are two views: Assignee and Initiative.
  - [React](https://github.com/facebook/react)
  - [ReactDOM](https://github.com/facebook/react/tree/master/packages/react-dom)
  - [React-Table](https://github.com/react-tools/react-table)
- - [Parcel](https://github.com/parcel-bundler/parcel)
+ - [webpack](https://webpack.js.org/)
  - [react-tooltip](https://github.com/wwayne/react-tooltip)
  - [jest](https://jestjs.io/)
  - [date-fns](https://github.com/date-fns/date-fns)
@@ -47,9 +47,9 @@ The best way to use this app would be to compile your code changes with
 ````javascript
 npm run build
 ````
-Then drop the index.css and index.js files into this folder:
+Then drop the index.css and index.js files into the production folder:
 ````
-\\prod1_atlas1\custom\JQTR
+\\~\custom\JQTR
 ````
 
 Within a Confluence page add a HTML macro and drop this markup into it:
@@ -79,3 +79,7 @@ Please feel free to contribute.
 * Show an indication when a total time column has tasks that don't have an estimate
 * Add the ability to write and run unit tests (Jest)
 * Fixed rounding issue in printHoursPretty fn'
+
+*2.0.0*
+
+* Convert app from jQuery plugin-based front end to React
