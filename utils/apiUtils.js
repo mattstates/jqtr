@@ -1,4 +1,4 @@
-import { authorizationValue, jiraApiUrlByIssue } from '../utils/urls.js';
+import { jiraApiUrlByIssue } from '../utils/urls.js';
 
 /**
  * @param {Object} issue - Raw Jira issue
@@ -257,16 +257,12 @@ function propertyCheck(property) {
 }
 
 const getFetchOptions = (options = []) => {
-    const headers = new Headers();
-
-    // Use if calls come from outside of Confluence.
-    // headers.append('Access-Control-Allow-Credentials', 'true');
-    // headers.append('Authorization', authorizationValue);
+    const headers = new Headers({
+    });
 
     const config = {
         method: 'GET',
-        headers: headers,
-        credentials: 'include'
+        headers: headers
     };
 
     if (options.length) {

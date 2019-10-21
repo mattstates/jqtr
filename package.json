@@ -1,41 +1,77 @@
 {
-  "name": "jira-query-time-remaining",
-  "jest": {
-    "verbose": true
-  },
-  "version": "2.1.0",
-  "description": "Jira Query Time Remaining tool for Confluence",
-  "main": "index.js",
-  "scripts": {
-    "test": "jest --watch",
-    "dev": "parcel index.html",
-    "start": "parcel build index.js",
-    "server": "node ./server/index.js"
-  },
-  "author": "Matt States",
-  "license": "ISC",
-  "devDependencies": {
-    "@babel/core": "^7.4.5",
-    "@babel/preset-env": "^7.4.5",
-    "@babel/preset-react": "^7.0.0",
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.2.6",
-    "eslint": "^4.19.1",
-    "eslint-plugin-jest": "^22.7.1",
-    "eslint-plugin-react": "^7.14.2",
-    "eslint-plugin-react-hooks": "^1.6.1",
-    "jest": "^24.8.0",
-    "node-sass": "^4.12.0",
-    "parcel-bundler": "^1.12.3",
-    "prettier": "^1.18.2"
-  },
-  "dependencies": {
-    "date-fns": "^1.30.1",
-    "express": "^4.17.1",
-    "node-fetch": "^2.6.0",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-table": "^6.10.0",
-    "react-tooltip": "^3.10.0"
-  }
+    "name": "jira-query-time-remaining",
+    "jest": {
+        "verbose": true
+    },
+    "version": "2.1.0",
+    "description": "Jira Query Time Remaining tool for Confluence",
+    "main": "index.js",
+    "scripts": {
+        "test": "jest --silent",
+        "test-verbose": "jest --verbose --silent",
+        "start": "webpack-dev-server --open --config webpack.dev.js --env.DEVMODE=true",
+        "start-local": "webpack-dev-server --open --config webpack.dev.js --env.DEVMODE=false",
+        "build": "webpack --config webpack.prod.js"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "npm test",
+            "pre-push": "npm run test-verbose"
+        }
+    },
+    "author": "Matt States",
+    "license": "ISC",
+    "devDependencies": {
+        "@babel/cli": "^7.6.2",
+        "@babel/core": "^7.6.2",
+        "@babel/plugin-proposal-nullish-coalescing-operator": "^7.4.4",
+        "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
+        "@babel/plugin-proposal-optional-chaining": "^7.6.0",
+        "@babel/plugin-transform-react-jsx": "^7.3.0",
+        "@babel/preset-env": "^7.6.2",
+        "@babel/preset-react": "^7.0.0",
+        "@babel/preset-typescript": "^7.6.0",
+        "@testing-library/jest-dom": "^4.1.2",
+        "@testing-library/react": "^9.3.0",
+        "@types/jest": "^24.0.18",
+        "@types/node": "^12.7.7",
+        "@types/react": "^16.9.2",
+        "@types/react-dom": "^16.9.0",
+        "babel-eslint": "^8.2.6",
+        "babel-jest": "^24.9.0",
+        "babel-loader": "^8.0.6",
+        "babel-preset-env": "^1.7.0",
+        "clean-webpack-plugin": "^1.0.1",
+        "css-loader": "^2.1.1",
+        "eslint": "^4.19.1",
+        "eslint-plugin-jest": "^22.17.0",
+        "eslint-plugin-react": "^7.14.3",
+        "eslint-plugin-react-hooks": "^1.7.0",
+        "html-webpack-plugin": "^3.2.0",
+        "husky": "^3.0.9",
+        "jest": "^24.9.0",
+        "jest-transform-css": "^2.0.0",
+        "node-sass": "^4.12.0",
+        "prettier": "^1.18.2",
+        "sass-loader": "^7.3.1",
+        "source-map-loader": "^0.2.4",
+        "style-loader": "^0.23.1",
+        "ts-jest": "^24.1.0",
+        "ts-loader": "^6.1.2",
+        "typescript": "^3.6.3",
+        "webpack": "^4.41.0",
+        "webpack-cli": "^3.3.9",
+        "webpack-dev-server": "^3.8.1",
+        "webpack-merge": "^4.2.2"
+    },
+    "dependencies": {
+        "@types/webpack": "^4.39.1",
+        "babel-polyfill": "^6.26.0",
+        "date-fns": "^1.30.1",
+        "deepmerge": "^4.0.0",
+        "react": "^16.8.6",
+        "react-dom": "^16.8.6",
+        "react-table": "^6.10.0",
+        "react-tooltip": "^3.10.0"
+    }
 }
