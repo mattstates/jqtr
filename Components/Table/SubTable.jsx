@@ -6,7 +6,7 @@ import Time from './Time.jsx';
 import { COLUMN_TYPES, VIEW_TYPES } from '../../utils/constants.js';
 import { getTooltipTimeData } from './tableUtils.js';
 
-export default ({ viewType, lampstrackUrl, columnWidths, resourceList, data }) => {
+export default ({ viewType, jiraApplicationUrl, columnWidths, resourceList, data }) => {
     const columns = [
         {
             // PLACEHOLDER - KEEPS COLUMNS ALIGNED.
@@ -25,7 +25,7 @@ export default ({ viewType, lampstrackUrl, columnWidths, resourceList, data }) =
                             {taskNumber}
                             {': '}
                         </span>
-                        <a href={`${lampstrackUrl}${taskNumber}`}>{taskTitle}</a>
+                        <a href={`${jiraApplicationUrl}${taskNumber}`}>{taskTitle}</a>
                     </span>
                 </React.Fragment>
             ),

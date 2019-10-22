@@ -3,7 +3,7 @@ import Loader from './Loaders/Loader.jsx';
 import React, { useEffect, useMemo, useReducer } from 'react';
 import SearchBar from './SearchBar.jsx';
 import Table from './Table/Table.jsx';
-import { jiraApiUrl, lampstrackUrl } from '../utils/urls.js';
+import { jiraApiUrl, jiraApplicationUrl } from '../utils/urls.ts';
 import { mapToUsefulData, gatherAllTasks, getFetchOptions } from '../utils/apiUtils.js';
 import { storageAvailable } from '../utils/utils.js';
 
@@ -140,7 +140,7 @@ export default function App({ appWidth }) {
     if (appState.hasError) {
         renderComponent = <Error message={appState.notification.message} permissions={appState.hasHad401} />;
     } else {
-        renderComponent = appState.isLoading ? <Loader /> : <Table issues={appState.data} appWidth={appWidth} lampstrackUrl={lampstrackUrl} />;
+        renderComponent = appState.isLoading ? <Loader /> : <Table issues={appState.data} appWidth={appWidth} jiraApplicationUrl={jiraApplicationUrl} />;
     }
 
     return (

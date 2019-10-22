@@ -1,4 +1,4 @@
-import { jiraApiUrlByIssue } from '../utils/urls.js';
+import { jiraApiUrlByIssue } from '../utils/urls.ts';
 
 /**
  * @param {Object} issue - Raw Jira issue

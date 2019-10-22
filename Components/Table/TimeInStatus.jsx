@@ -4,7 +4,7 @@ import React, { useContext, useEffect } from 'react';
 import TimeInStatusContext from '../../contexts/TimeInStatusContext.js';
 import dateFns from 'date-fns';
 import { getFetchOptions } from '../../utils/apiUtils.js';
-import { jiraApiUrlByIssue } from '../../utils/urls.js';
+import { jiraApiUrlByIssue } from '../../utils/urls.ts';
 
 function TimeInStatus({ issueId, status }) {
     const timeInStatusContext = useContext(TimeInStatusContext);

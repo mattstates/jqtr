@@ -20,7 +20,7 @@ interface IAppConfiguration {
         jiraApiAutocompleteEndpoint: string;
         jiraApiSearchEndpoint: string;
         jiraBaseApiEndpoint: string;
-        test?: string;
+        jiraApplicationUrl: string
     };
 }
 
@@ -34,6 +34,7 @@ class Configuration implements IAppConfiguration {
         jiraApiAutocompleteEndpoint: '';
         jiraApiSearchEndpoint: '';
         jiraBaseApiEndpoint: '';
+        jiraApplicationUrl: '';
     };
 }
 
@@ -59,7 +60,8 @@ const {
     apiHostName,
     jiraApiAutocompleteEndpoint,
     jiraApiSearchEndpoint,
-    jiraBaseApiEndpoint
+    jiraBaseApiEndpoint,
+    jiraApplicationUrl
 } = CONFIG.urlConfiguration;
 
 const { doneStatusDefinitions, jiraApiMaxResults, options } = CONFIG.jiraApiConfiguration;
@@ -79,5 +81,6 @@ export {
     jiraApiMaxResults,
     jiraApiSearchEndpoint,
     jiraBaseApiEndpoint,
-    jiraCustomFields
+    jiraCustomFields,
+    jiraApplicationUrl
 };

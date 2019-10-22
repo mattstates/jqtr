@@ -3,7 +3,8 @@
         "apiHostName": "",
         "jiraBaseApiEndpoint": "/rest/api/2",
         "jiraApiSearchEndpoint": "/search",
-        "jiraApiAutocompleteEndpoint": "/jql/autocompletedata/suggestions"
+        "jiraApiAutocompleteEndpoint": "/jql/autocompletedata/suggestions",
+        "jiraApplicationUrl": ""
     },
     "jiraApiConfiguration": {
         "doneStatusDefinitions": [],
