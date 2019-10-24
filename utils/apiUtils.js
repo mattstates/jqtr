@@ -3,7 +3,6 @@ import { jiraApiUrlByIssue } from '../utils/urls.ts';
 /**
  * @param {Object} issue - Raw Jira issue
  * Initial issue mapping of the raw response from Jira.
- * Code is mostly organized in the same way as a Jira task on lampstrack.
  */
 // eslint-disable-next-line complexity
 function mapToUsefulData(issue) {
@@ -14,11 +13,11 @@ function mapToUsefulData(issue) {
         // TASK INFO
         taskNumber: issue.key,
         taskTitle: fields.summary,
-        projectType: fields.project.key, // "UTI", "LP", "PSS" etc.
+        projectType: fields.project.key,
 
         // TASK DETAILS
         /*
-            Type, Priority, Affects Version, Component, Labels, Resource Queue, P4 Job, Failed QA, Failed Code Review,
+            Type, Priority, Affects Version, Component, Labels, Resource Queue, Failed QA, Failed Code Review,
             Epic Link, Sprint, Status, Resolution, Fix Version
         */
         issueType: {
@@ -66,9 +65,8 @@ function mapToUsefulData(issue) {
 
         isSubtask: fields.issuetype.subtask,
 
-        // Items in the fields.subtasks array are not fully detailed issues/tasks.
+        // Items in the fields.subtasks array are not objects with all of the issues/tasks properties.
         // The gatherAllTasks and mapSubtasksToParents functions attempts to address this, but API calls might be
-        // better since the JQL Query may accidentally omit a subtask.
         subtasks: fields.subtasks ?
             fields.subtasks.map((subtask) => {
                 return {
