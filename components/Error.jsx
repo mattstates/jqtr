@@ -3,15 +3,16 @@ import React from 'react';
 import { ERROR_SYMBOL } from '../utils/constants.js';
 
 function PermissionIssue() {
+    // TODO: Decouple this issue from being specific to lp
     return (
         <div className="permissionsIssue">
-            <p>{'You may have a permissions issue. Try to grant permission from the Targeted Version Map then retry your query.'}</p>
+            <p>{'You may have a permissions issue. Try to grant permission from another page within Confluence then retry your query.'}</p>
             <p>
-                <a href={'https://confluence.lampsplus.com:8093/display/WDP/Targeted+Version+Map'} target={'_new'}>
+                <a href={'/display/WDP/Targeted+Version+Map'} target={'_new'}>
                     {'Targeted Version Map'}
                 </a>
             </p>
-            <p>{'If this did not resolve your issue, you may need to contact the Lamps Plus Atlassian Administrator.'}</p>
+            <p>{'If this did not resolve your issue, you may need to contact the Atlassian Administrator.'}</p>
         </div>
     );
 }

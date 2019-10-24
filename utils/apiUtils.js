@@ -1,9 +1,8 @@
-import { authorizationValue, jiraApiUrlByIssue } from '../utils/urls.js';
+import { jiraApiUrlByIssue } from '../utils/urls.ts';
 
 /**
  * @param {Object} issue - Raw Jira issue
  * Initial issue mapping of the raw response from Jira.
- * Code is mostly organized in the same way as a Jira task on lampstrack.
  */
 // eslint-disable-next-line complexity
 function mapToUsefulData(issue) {
@@ -14,11 +13,11 @@ function mapToUsefulData(issue) {
         // TASK INFO
         taskNumber: issue.key,
         taskTitle: fields.summary,
-        projectType: fields.project.key, // "UTI", "LP", "PSS" etc.
+        projectType: fields.project.key,
 
         // TASK DETAILS
         /*
-            Type, Priority, Affects Version, Component, Labels, Resource Queue, P4 Job, Failed QA, Failed Code Review,
+            Type, Priority, Affects Version, Component, Labels, Resource Queue, Failed QA, Failed Code Review,
             Epic Link, Sprint, Status, Resolution, Fix Version
         */
         issueType: {
@@ -66,9 +65,8 @@ function mapToUsefulData(issue) {
 
         isSubtask: fields.issuetype.subtask,
 
-        // Items in the fields.subtasks array are not fully detailed issues/tasks.
+        // Items in the fields.subtasks array are not objects with all of the issues/tasks properties.
         // The gatherAllTasks and mapSubtasksToParents functions attempts to address this, but API calls might be
-        // better since the JQL Query may accidentally omit a subtask.
         subtasks: fields.subtasks ?
             fields.subtasks.map((subtask) => {
                 return {
@@ -181,7 +179,7 @@ function gatherAllTasks(taskCollection) {
  */
 function mapSubtasksToParents(taskCollection) {
     return taskCollection.reduce((collection, task) => {
-        if (task.isSubtask) {
+        if (task.isSubtask && task.parent) {
             return collection;
         }
 
@@ -195,22 +193,22 @@ function mapSubtasksToParents(taskCollection) {
 
 /**
  * @param {Array} taskCollection - full collection of tasks
- * @param {Array} childArray - a task's .subtasks collection
- * @param {string} primaryKey - the property to identify tasks
+ * @param {Array} childTasksCollection - a task's .subtasks collection
+ * @param {string} key - the property to identify tasks
  * Returns childArray mapped to fully details tasks and filtered to match the jql query results.
  *
  * Normally the tasks inside of a parent's subtasks property comes from Jira without all of the subtask's Jira information.
  * Using this method, the entire collection is passed in and all matching subtasks are replaced
  * with their "full" versions. This is done so every task in the collection will behave more uniformly.
  */
-function groupTasksByKey(taskCollection, childArray, primaryKey) {
-    return childArray
-        .map((childArrayTask) => {
-            const matchedTask = taskCollection.find((parentArrayTask) => parentArrayTask[primaryKey] === childArrayTask[primaryKey]);
+function groupTasksByKey(taskCollection, childTasksCollection, key) {
+    return childTasksCollection
+        .map((childTask) => {
+            const matchedTask = taskCollection.find((task) => task[key] === childTask[key]);
             if (matchedTask) {
                 return matchedTask;
             }
-            console.warn(`The JQL query has omitted a subtask (${childArrayTask.taskNumber}: ${childArrayTask.taskTitle}).`);
+            console.warn(`The JQL query has omitted a subtask (${childTask.taskNumber}: ${childTask.taskTitle}).`);
             return null;
         })
         .filter((subtask) => Boolean(subtask));
@@ -238,12 +236,11 @@ function findMissingParentTasks(collection) {
     return Array.from(
         new Set(
             collection
-                .filter((task) => task.isSubtask)
+                .filter((task) => task.isSubtask && task.parent)
                 .reduce((prev, curr) => {
-                    if (
-                        collection.find((item) => {
-                            return item.id === curr.parent.id;
-                        }) === undefined
+                    if (collection.find((item) => {
+                        return item.id === curr.parent.id;
+                    }) === undefined
                     ) {
                         return [...prev, curr.parent.id];
                     }
@@ -258,16 +255,12 @@ function propertyCheck(property) {
 }
 
 const getFetchOptions = (options = []) => {
-    const headers = new Headers();
-
-    // Use if calls come from outside of Confluence.
-    // headers.append('Access-Control-Allow-Credentials', 'true');
-    // headers.append('Authorization', authorizationValue);
+    const headers = new Headers({
+    });
 
     const config = {
         method: 'GET',
-        headers: headers,
-        credentials: 'include'
+        headers: headers
     };
 
     if (options.length) {

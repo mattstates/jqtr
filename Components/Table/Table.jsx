@@ -221,7 +221,7 @@ class Table extends React.Component {
                                             {data.taskNumber}
                                             {': '}
                                         </span>
-                                        <a href={`${this.props.lampstrackUrl}${data.taskNumber}`}>{data.taskTitle}</a>
+                                        <a href={`${this.props.jiraApplicationUrl}${data.taskNumber}`}>{data.taskTitle}</a>
                                     </span>
                                 </React.Fragment>
                             ),
@@ -425,7 +425,7 @@ class Table extends React.Component {
                                         data={this.formatSubTableDataByViewType(VIEW_TYPES.INITIATIVE, row)}
                                         appWidth={this.props.appWidth}
                                         resourceList={sortedResourceList}
-                                        lampstrackUrl={this.props.lampstrackUrl}
+                                        jiraApplicationUrl={this.props.jiraApplicationUrl}
                                         columnWidths={this.columnWidths}
                                         viewType={VIEW_TYPES.INITIATIVE}
                                     />
@@ -436,7 +436,7 @@ class Table extends React.Component {
                                         data={this.formatSubTableDataByViewType(VIEW_TYPES.ASSIGNEE, row.original[1])}
                                         appWidth={this.props.appWidth}
                                         resourceList={sortedResourceList}
-                                        lampstrackUrl={this.props.lampstrackUrl}
+                                        jiraApplicationUrl={this.props.jiraApplicationUrl}
                                         columnWidths={this.columnWidths}
                                         viewType={VIEW_TYPES.ASSIGNEE}
                                     />

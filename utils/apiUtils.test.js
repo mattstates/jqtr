@@ -1,5 +1,5 @@
-import { gatherAllTasks, mapToUsefulData, getFetchOptions, findMissingParentTasks, mapSubtasksToParents } from './apiUtils.js';
-import sampleResponse from '../mockData/sampleData1.js';
+import { gatherAllTasks, mapToUsefulData, getFetchOptions, findMissingParentTasks, mapSubtasksToParents } from './apiUtils';
+import sampleResponse from '../mockData/apiData';
 
 describe('mapToUsefulData', () => {
     let data = mapToUsefulData(sampleResponse.issues[0]);
@@ -33,6 +33,6 @@ describe('findMissingParentTasks', () => {
     let data = sampleResponse.issues.map(mapToUsefulData);
 
     test('Returns missing tasks', () => {
-        expect(findMissingParentTasks(data)).toHaveLength(2);
+        expect(findMissingParentTasks(data)).toHaveLength(1);
     });
 });

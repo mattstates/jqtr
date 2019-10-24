@@ -1,0 +1,16 @@
+{
+    "urlConfiguration": {
+        "apiHostName": "",
+        "jiraBaseApiEndpoint": "/rest/api/2",
+        "jiraApiSearchEndpoint": "/search",
+        "jiraApiAutocompleteEndpoint": "/jql/autocompletedata/suggestions",
+        "jiraApplicationUrl": ""
+    },
+    "jiraApiConfiguration": {
+        "doneStatusDefinitions": [],
+        "jiraApiMaxResults": 300,
+        "options": {
+            "jiraCustomFields": []
+        }
+    }
+}
