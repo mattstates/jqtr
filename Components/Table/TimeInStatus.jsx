@@ -4,7 +4,7 @@ import React, { useContext, useEffect } from 'react';
 import TimeInStatusContext from '../../contexts/TimeInStatusContext.js';
 import dateFns from 'date-fns';
 import { getFetchOptions } from '../../utils/apiUtils.js';
-import { jiraApiUrlByIssue } from '../../utils/urls.js';
+import { jiraApiUrlByIssue } from '../../utils/urls.ts';
 
 function TimeInStatus({ issueId, status }) {
     const timeInStatusContext = useContext(TimeInStatusContext);
@@ -37,7 +37,7 @@ async function fetchTimeInStatusData({ status, issueId, signal, fromDate }) {
     let timeInStatus;
 
     try {
-        const response = await fetch(`${jiraApiUrlByIssue}${issueId}&fields=id,status,created&expand=changelog`, getFetchOptions([['signal', signal]]));
+        const response = await fetch(`${jiraApiUrlByIssue}${issueId}?&fields=id,status,created&expand=changelog`, getFetchOptions([['signal', signal]]));
         const json = await response.json();
         if (status && json.changelog && json.changelog.histories) {
             const matchingStatus = json.changelog.histories.filter((log) => log.items.some((item) => item.toString && item.toString === status));
