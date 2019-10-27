@@ -22,7 +22,7 @@ export default function SearchBar({ initialSearchString, submitCallback, abortCo
         if (e.which !== 13 || searchString.trim().length < 1) {
             return;
         }
-        if (storageAvailable) {
+        if (isLocalStorageAvailable) {
             window.localStorage.lpTimeRemainingQuery = searchString;
         }
 
