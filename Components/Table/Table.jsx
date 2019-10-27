@@ -7,9 +7,16 @@ import Status from './Status.jsx';
 import SubTable from './SubTable.jsx';
 import Time from './Time.jsx';
 import ViewSelector from './ViewSelector.jsx';
-import { COLUMN_TYPES, UNASSIGNED, VIEW_TYPES, WARNING_SYMBOL } from '../../utils/constants.js';
-import { alphabeticalSortPinnedValue, getTooltipTimeData, sortByStatus, sortByTaskNumber, sortByTime } from './tableUtils.js';
-import { flattenDeep, storageAvailable, titleCase } from '../../utils/utils.js';
+import { COLUMN_TYPES, UNASSIGNED, VIEW_TYPES, WARNING_SYMBOL } from '../../utils/constants';
+import {
+    alphabeticalSortPinnedValue,
+    getTooltipTimeData,
+    sortByStatus,
+    sortByTaskNumber,
+    sortByTime
+} from './tableUtils.js';
+import { flattenDeep, titleCase } from '../../utils/utils';
+import { isLocalStorageAvailable } from '../../init';
 
 /**
  * <Table /> Wraps the react-table component.
@@ -49,9 +56,11 @@ class Table extends React.Component {
         let initialViewType;
 
         if (
-            storageAvailable &&
+            isLocalStorageAvailable &&
             window.localStorage.lpTimeRemainingViewType &&
-            Object.values(VIEW_TYPES).some((viewType) => viewType === window.localStorage.lpTimeRemainingViewType)
+            Object.values(VIEW_TYPES).some(
+                viewType => viewType === window.localStorage.lpTimeRemainingViewType
+            )
         ) {
             initialViewType = window.localStorage.lpTimeRemainingViewType;
         } else {
@@ -70,8 +79,10 @@ class Table extends React.Component {
         return taskCollection.reduce((totals, task) => {
             if (!ignoreSubtasks && task.subtasks.length) {
                 const subtaskResources = this.resourceAccumulator(task.subtasks);
-                Object.keys(subtaskResources).forEach((key) => {
-                    totals[key] ? (totals[key] += subtaskResources[key]) : (totals[key] = subtaskResources[key]);
+                Object.keys(subtaskResources).forEach(key => {
+                    totals[key]
+                        ? (totals[key] += subtaskResources[key])
+                        : (totals[key] = subtaskResources[key]);
                 });
             }
             if (task.omitFromJqtr) {
@@ -94,9 +105,11 @@ class Table extends React.Component {
     formatAssigneeView(data) {
         const allTasks = data
             .reduce((accumulation, task) => {
-                return task.subtasks.length ? [...accumulation, task, ...task.subtasks] : [...accumulation, task];
+                return task.subtasks.length
+                    ? [...accumulation, task, ...task.subtasks]
+                    : [...accumulation, task];
             }, [])
-            .filter((task) => !task.omitFromJqtr);
+            .filter(task => !task.omitFromJqtr);
 
         return Object.entries(
             allTasks.reduce((assignees, task) => {
@@ -116,7 +129,9 @@ class Table extends React.Component {
 
         switch (view) {
             case VIEW_TYPES.INITIATIVE:
-                data = this.props.issues.sort((a, b) => sortByTaskNumber(a.taskNumber, b.taskNumber));
+                data = this.props.issues.sort((a, b) =>
+                    sortByTaskNumber(a.taskNumber, b.taskNumber)
+                );
                 viewType = view;
                 break;
             case VIEW_TYPES.ASSIGNEE:
@@ -134,7 +149,7 @@ class Table extends React.Component {
         });
 
         // Store the viewType in localStorage for future page views.
-        if (storageAvailable) {
+        if (isLocalStorageAvailable) {
             window.localStorage.lpTimeRemainingViewType = viewType;
         }
     }
@@ -172,13 +187,22 @@ class Table extends React.Component {
      * @param {*} resourceQueue
      */
     showFooterWarning(collection, resourceQueue) {
-        return collection.filter((task) => !task.omitFromJqtr && task.resourceQueue === resourceQueue && task.timeProps.needsEstimate).length > 0;
+        return (
+            collection.filter(
+                task =>
+                    !task.omitFromJqtr &&
+                    task.resourceQueue === resourceQueue &&
+                    task.timeProps.needsEstimate
+            ).length > 0
+        );
     }
 
     render() {
         if (this.state.dataSet.length) {
             // 2D array of [...[resourceQueue, total]]
-            const sortedResourceList = Object.entries(this.totalResources).sort(alphabeticalSortPinnedValue);
+            const sortedResourceList = Object.entries(this.totalResources).sort(
+                alphabeticalSortPinnedValue
+            );
 
             // React-Table Columns: Index, Task Name, Total Time Remaining, [Dynamic Resource Queue Time Remaining]
             let columns;
@@ -194,7 +218,10 @@ class Table extends React.Component {
                             Expander: function({ isExpanded, ...args }) {
                                 const { viewIndex, original } = args;
                                 const enabled = Boolean(original.subtasks.length);
-                                const classes = [isExpanded ? 'expandedIndex' : 'closedIndex', enabled ? 'expandedEnabled' : ''];
+                                const classes = [
+                                    isExpanded ? 'expandedIndex' : 'closedIndex',
+                                    enabled ? 'expandedEnabled' : ''
+                                ];
                                 return <div className={classes.join(' ')}>{viewIndex + 1}</div>;
                             },
                             Header: () => {
@@ -213,15 +240,22 @@ class Table extends React.Component {
                         },
                         {
                             // INITIATIVES
-                            accessor: (data) => (
+                            accessor: data => (
                                 <React.Fragment key={data.taskNumber}>
                                     <span className="initiative">
-                                        <img src={data.issueType.iconUrl} title={data.issueType.name} />
+                                        <img
+                                            src={data.issueType.iconUrl}
+                                            title={data.issueType.name}
+                                        />
                                         <span>
                                             {data.taskNumber}
                                             {': '}
                                         </span>
-                                        <a href={`${this.props.jiraApplicationUrl}${data.taskNumber}`}>{data.taskTitle}</a>
+                                        <a
+                                            href={`${this.props.jiraApplicationUrl}${data.taskNumber}`}
+                                        >
+                                            {data.taskTitle}
+                                        </a>
                                     </span>
                                 </React.Fragment>
                             ),
@@ -234,9 +268,13 @@ class Table extends React.Component {
                         },
                         {
                             // STATUS
-                            accessor: (data) =>
+                            accessor: data =>
                                 data.omitFromJqtr ? (
-                                    <span className="warning-symbol" title="Task Omitted from Query" info={{ status: '' }}>
+                                    <span
+                                        className="warning-symbol"
+                                        title="Task Omitted from Query"
+                                        info={{ status: '' }}
+                                    >
                                         {WARNING_SYMBOL}
                                     </span>
                                 ) : (
@@ -247,7 +285,7 @@ class Table extends React.Component {
                             id: 'status',
                             maxWidth: this.columnWidths[COLUMN_TYPES.STATUS],
                             sortMethod: (a, b) => {
-                                const mappedStatus = [a, b].map((component) => {
+                                const mappedStatus = [a, b].map(component => {
                                     return component === '' ? '' : component.props.info.status;
                                 });
                                 return sortByStatus(mappedStatus[0], mappedStatus[1]);
@@ -256,19 +294,30 @@ class Table extends React.Component {
                         },
                         {
                             // TOTAL TIME REMAINING
-                            accessor: (data) =>
-                                Object.values(this.resourceAccumulator([data])).reduce((total, value) => {
-                                    return total + value;
-                                }, 0),
-                            Cell: (props) => {
-                                return <Time time={props.value} progressInfo={props.original.timeProps.aggregateProgress} />;
+                            accessor: data =>
+                                Object.values(this.resourceAccumulator([data])).reduce(
+                                    (total, value) => {
+                                        return total + value;
+                                    },
+                                    0
+                                ),
+                            Cell: props => {
+                                return (
+                                    <Time
+                                        time={props.value}
+                                        progressInfo={props.original.timeProps.aggregateProgress}
+                                    />
+                                );
                             },
                             Footer: () => {
                                 return (
                                     <Time
-                                        time={Object.values(this.totalResources).reduce((total, resourceTime) => {
-                                            return total + resourceTime;
-                                        }, 0)}
+                                        time={Object.values(this.totalResources).reduce(
+                                            (total, resourceTime) => {
+                                                return total + resourceTime;
+                                            },
+                                            0
+                                        )}
                                     />
                                 );
                             },
@@ -278,19 +327,31 @@ class Table extends React.Component {
                             sortMethod: sortByTime
                         },
                         // Spread resource-based time columns into columns list.
-                        ...sortedResourceList.map((resource) => {
+                        ...sortedResourceList.map(resource => {
                             return {
-                                accessor: (data) => this.resourceAccumulator([data])[resource[0]],
-                                Cell: (props) => {
-                                    const tooltipData = getTooltipTimeData([props.original, ...props.original.subtasks], resource[0]);
+                                accessor: data => this.resourceAccumulator([data])[resource[0]],
+                                Cell: props => {
+                                    const tooltipData = getTooltipTimeData(
+                                        [props.original, ...props.original.subtasks],
+                                        resource[0]
+                                    );
                                     return props.value === undefined ? null : (
-                                        <Time time={props.value} id={props.original.id + resource[0]} tooltipData={tooltipData.length ? tooltipData : null} />
+                                        <Time
+                                            time={props.value}
+                                            id={props.original.id + resource[0]}
+                                            tooltipData={tooltipData.length ? tooltipData : null}
+                                        />
                                     );
                                 },
-                                Footer: (info) => (
+                                Footer: info => (
                                     <Time
                                         footerWarning={this.showFooterWarning(
-                                            flattenDeep(info.data.map((item) => [item._original, ...item._original.subtasks])),
+                                            flattenDeep(
+                                                info.data.map(item => [
+                                                    item._original,
+                                                    ...item._original.subtasks
+                                                ])
+                                            ),
                                             resource[0]
                                         )}
                                         time={resource[1] || 0}
@@ -315,7 +376,10 @@ class Table extends React.Component {
                             Expander: function({ isExpanded, ...args }) {
                                 const { viewIndex, original } = args;
                                 const enabled = Boolean(original[1].length);
-                                const classes = [isExpanded ? 'expandedIndex' : 'closedIndex', enabled ? 'expandedEnabled' : ''];
+                                const classes = [
+                                    isExpanded ? 'expandedIndex' : 'closedIndex',
+                                    enabled ? 'expandedEnabled' : ''
+                                ];
                                 return <div className={classes.join(' ')}>{viewIndex + 1}</div>;
                             },
                             Header: () => {
@@ -334,7 +398,7 @@ class Table extends React.Component {
                         },
                         {
                             // ASSIGNEE
-                            accessor: (data) => {
+                            accessor: data => {
                                 return data[0];
                             },
                             Footer: this.state.timeStamp,
@@ -353,18 +417,21 @@ class Table extends React.Component {
                         },
                         {
                             // TOTAL TIME REMAINING
-                            accessor: (data) => {
+                            accessor: data => {
                                 return data[1].reduce((total, value) => {
                                     return total + value.timeProps.timeRemaining;
                                 }, 0);
                             },
-                            Cell: (props) => <Time time={props.value} />,
+                            Cell: props => <Time time={props.value} />,
                             Footer: () => {
                                 return (
                                     <Time
-                                        time={Object.values(this.totalResources).reduce((total, resourceTime) => {
-                                            return total + resourceTime;
-                                        }, 0)}
+                                        time={Object.values(this.totalResources).reduce(
+                                            (total, resourceTime) => {
+                                                return total + resourceTime;
+                                            },
+                                            0
+                                        )}
                                     />
                                 );
                             },
@@ -374,26 +441,36 @@ class Table extends React.Component {
                             sortMethod: sortByTime
                         },
                         // Spread resource-based time columns into columns list.
-                        ...sortedResourceList.map((resource) => {
+                        ...sortedResourceList.map(resource => {
                             return {
-                                accessor: (data) => {
-                                    const matchingTasks = data[1].filter((task) => task.resourceQueue === resource[0]);
+                                accessor: data => {
+                                    const matchingTasks = data[1].filter(
+                                        task => task.resourceQueue === resource[0]
+                                    );
 
-                                    return matchingTasks.length ?
-                                        matchingTasks.reduce((total, task) => {
-                                            return total + task.timeProps.timeRemaining;
-                                        }, 0) :
-                                        '';
+                                    return matchingTasks.length
+                                        ? matchingTasks.reduce((total, task) => {
+                                              return total + task.timeProps.timeRemaining;
+                                          }, 0)
+                                        : '';
                                 },
-                                Cell: (props) => {
-                                    const warning = props.original[1].some((task) => {
-                                        return task.timeProps.needsEstimate && task.resourceQueue === resource[0];
+                                Cell: props => {
+                                    const warning = props.original[1].some(task => {
+                                        return (
+                                            task.timeProps.needsEstimate &&
+                                            task.resourceQueue === resource[0]
+                                        );
                                     });
-                                    return props.value === undefined ? null : <Time warning={warning} time={props.value} />;
+                                    return props.value === undefined ? null : (
+                                        <Time warning={warning} time={props.value} />
+                                    );
                                 },
-                                Footer: (info) => (
+                                Footer: info => (
                                     <Time
-                                        footerWarning={this.showFooterWarning(flattenDeep(info.data.map((item) => item._original[1])), resource[0])}
+                                        footerWarning={this.showFooterWarning(
+                                            flattenDeep(info.data.map(item => item._original[1])),
+                                            resource[0]
+                                        )}
                                         time={resource[1] || 0}
                                     />
                                 ),
@@ -417,12 +494,15 @@ class Table extends React.Component {
                     showPageSizeOptions={false}
                     pageSize={this.state.rowCount}
                     className="-striped"
-                    SubComponent={(row) => {
+                    SubComponent={row => {
                         switch (this.state.viewType) {
                             case VIEW_TYPES.INITIATIVE:
                                 return (
                                     <SubTable
-                                        data={this.formatSubTableDataByViewType(VIEW_TYPES.INITIATIVE, row)}
+                                        data={this.formatSubTableDataByViewType(
+                                            VIEW_TYPES.INITIATIVE,
+                                            row
+                                        )}
                                         appWidth={this.props.appWidth}
                                         resourceList={sortedResourceList}
                                         jiraApplicationUrl={this.props.jiraApplicationUrl}
@@ -433,7 +513,10 @@ class Table extends React.Component {
                             case VIEW_TYPES.ASSIGNEE:
                                 return (
                                     <SubTable
-                                        data={this.formatSubTableDataByViewType(VIEW_TYPES.ASSIGNEE, row.original[1])}
+                                        data={this.formatSubTableDataByViewType(
+                                            VIEW_TYPES.ASSIGNEE,
+                                            row.original[1]
+                                        )}
                                         appWidth={this.props.appWidth}
                                         resourceList={sortedResourceList}
                                         jiraApplicationUrl={this.props.jiraApplicationUrl}
@@ -455,9 +538,13 @@ class Table extends React.Component {
     formatSubTableDataByViewType(viewType, rowInfo) {
         switch (viewType) {
             case VIEW_TYPES.INITIATIVE:
-                return [...rowInfo.original.subtasks, rowInfo.original].filter((task) => !task.omitFromJqtr).sort((a, b) => Number(a.id) - Number(b.id));
+                return [...rowInfo.original.subtasks, rowInfo.original]
+                    .filter(task => !task.omitFromJqtr)
+                    .sort((a, b) => Number(a.id) - Number(b.id));
             case VIEW_TYPES.ASSIGNEE:
-                return rowInfo.filter((task) => !task.omitFromJqtr).sort((a, b) => Number(a.id) - Number(b.id));
+                return rowInfo
+                    .filter(task => !task.omitFromJqtr)
+                    .sort((a, b) => Number(a.id) - Number(b.id));
             default:
                 console.error('Unsupported View Type Passed to Sub Table Data.');
                 return undefined;

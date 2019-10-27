@@ -1,5 +1,7 @@
 import merge from 'deepmerge'; //https://github.com/TehShrike/deepmerge
 declare var DEVMODE: string; //Webpack assigns a value to this
+import { checkStorageAvailability } from './utils/utils';
+import { WINDOW_STORAGE_KEY } from './utils/constants';
 
 interface IAppConfiguration {
     jiraApiConfiguration: {
@@ -20,7 +22,7 @@ interface IAppConfiguration {
         jiraApiAutocompleteEndpoint: string;
         jiraApiSearchEndpoint: string;
         jiraBaseApiEndpoint: string;
-        jiraApplicationUrl: string
+        jiraApplicationUrl: string;
     };
 }
 
@@ -74,9 +76,12 @@ try {
     hostName = '';
 }
 
+const isLocalStorageAvailable = checkStorageAvailability(WINDOW_STORAGE_KEY);
+
 export {
     doneStatusDefinitions,
     hostName,
+    isLocalStorageAvailable,
     jiraApiAutocompleteEndpoint,
     jiraApiMaxResults,
     jiraApiSearchEndpoint,

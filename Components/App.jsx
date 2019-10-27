@@ -5,7 +5,7 @@ import SearchBar from './SearchBar.jsx';
 import Table from './Table/Table.jsx';
 import { jiraApiUrl, jiraApplicationUrl } from '../utils/urls.ts';
 import { mapToUsefulData, gatherAllTasks, getFetchOptions } from '../utils/apiUtils.js';
-import { storageAvailable } from '../utils/utils.js';
+import { isLocalStorageAvailable } from '../init';
 
 function EmptyNotification() {
     return { message: '', items: [] };
@@ -81,7 +81,7 @@ function getInitialQuery() {
             initialQuery = window.decodeURIComponent(initialQuery);
         }
         return initialQuery;
-    } else if (storageAvailable) {
+    } else if (isLocalStorageAvailable) {
         return localStorage.lpTimeRemainingQuery || '';
     }
     return '';

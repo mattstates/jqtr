@@ -1,5 +1,5 @@
 import { alphabeticalSortPinnedValue, getTooltipTimeData, sortByStatus, sortByTaskNumber, sortByTime } from './tableUtils.js';
-import { NONE } from '../../utils/constants.js';
+import { NONE } from '../../utils/constants';
 
 const unsortedArrayMock = [['Apple'], ['Microsoft'], ['linux'], [NONE], ['Microsofts'], ['apple'], ['12'], ['zzz']];
 

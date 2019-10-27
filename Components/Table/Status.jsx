@@ -2,7 +2,7 @@ import './Status.scss';
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
 import TimeInStatus from './TimeInStatus.jsx';
-import { ALERT_SYMBOL, FLAG_SYMBOL, KEYTASK_SYMBOL } from '../../utils/constants.js';
+import { ALERT_SYMBOL, FLAG_SYMBOL, KEYTASK_SYMBOL } from '../../utils/constants';
 
 export default function Status({ info }) {
     const showTeamName = info.resourceGroup && info.resourceGroup.name;

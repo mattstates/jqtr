@@ -3,7 +3,7 @@ import React from 'react';
 import ReactTable from 'react-table';
 import Status from './Status.jsx';
 import Time from './Time.jsx';
-import { COLUMN_TYPES, VIEW_TYPES } from '../../utils/constants.js';
+import { COLUMN_TYPES, VIEW_TYPES } from '../../utils/constants';
 import { getTooltipTimeData } from './tableUtils.js';
 
 export default ({ viewType, jiraApplicationUrl, columnWidths, resourceList, data }) => {

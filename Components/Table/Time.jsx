@@ -1,8 +1,8 @@
 import './Time.scss';
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
-import { WARNING_SYMBOL } from '../../utils/constants.js';
-import { printHoursPretty } from '../../utils/utils.js';
+import { WARNING_SYMBOL } from '../../utils/constants';
+import { printHoursPretty } from '../../utils/utils';
 
 function formatTooltip(tooltipData, id = '') {
     if (!tooltipData || !tooltipData.length) {

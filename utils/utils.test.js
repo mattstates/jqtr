@@ -1,4 +1,4 @@
-import { printHoursPretty } from './utils.js';
+import { printHoursPretty } from './utils';
 
 describe('printHoursPretty', () => {
 

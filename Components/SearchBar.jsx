@@ -1,7 +1,7 @@
 import './SearchBar.scss';
 import React, { useState, useEffect, useContext } from 'react';
 import TimeInStatusContext from '../contexts/TimeInStatusContext.js';
-import { storageAvailable } from '../utils/utils.js';
+import { isLocalStorageAvailable } from '../init';
 
 export default function SearchBar({ initialSearchString, submitCallback, abortController }) {
     const [searchString, updateSearchString] = useState(initialSearchString);

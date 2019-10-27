@@ -1,4 +1,4 @@
-import { NONE } from '../../utils/constants.js';
+import { NONE } from '../../utils/constants';
 
 function getTooltipTimeData(taskArray, filterBy) {
     return taskArray.filter((task) => task.resourceQueue === filterBy).map((task) => {

@@ -5,6 +5,7 @@ const KEYTASK_SYMBOL = '🔑';
 const NONE = 'None';
 const UNASSIGNED = 'Unassigned';
 const WARNING_SYMBOL = '⚠️';
+const WINDOW_STORAGE_KEY = 'localStorage';
 
 const VIEW_TYPES = Object.freeze({
     ASSIGNEE: 'assignee',
@@ -28,5 +29,6 @@ export {
     NONE,
     UNASSIGNED,
     VIEW_TYPES,
-    WARNING_SYMBOL
+    WARNING_SYMBOL,
+    WINDOW_STORAGE_KEY
 };

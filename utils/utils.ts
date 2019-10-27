@@ -1,40 +1,43 @@
 const HOUR_IN_SECONDS = 3600;
 
-function printHoursPretty(seconds) {
-    // Ported from original JQTR
+function printHoursPretty(seconds: number): string {
 
-    let hours = Math.floor(seconds / HOUR_IN_SECONDS);
-    hours = hours > 0 ? `${hours}h` : '';
+    const hours = Math.floor(seconds / HOUR_IN_SECONDS);
+    const hoursOutput = hours > 0 ? `${hours}h` : '';
 
-    let minutes = Math.floor(seconds % HOUR_IN_SECONDS / 60);
-    minutes = minutes > 0 ? `${minutes}m`: '';
+    const minutes = Math.floor((seconds % HOUR_IN_SECONDS) / 60);
+    const minutesOutput = minutes > 0 ? `${minutes}m` : '';
 
-    return (`${hours}${hours && minutes ? ' ' : ''}${minutes}`) || '0h';
+    return `${hoursOutput}${Boolean(hoursOutput && minutesOutput) ? ' ' : ''}${minutesOutput}` || '0h';
 }
 
-const storageAvailable = ((type) => {
-    // Ported from original JQTR
+const checkStorageAvailability = (storageType: string): boolean => {
     try {
-        const storage = window[type],
-            x = '__storage_test__';
-        storage.setItem(x, x);
-        storage.removeItem(x);
+        const storage = (window as { [key: string]: any })[storageType] as Storage;
+        const tempVar = '__storage_test__';
+        storage.setItem(tempVar, tempVar);
+        storage.removeItem(tempVar);
         return true;
     } catch (e) {
+        const message = e?.message;
+        console.error(`${storageType} Storage is Not Available`, message);
         return false;
     }
-})('localStorage');
+};
 
-function titleCase(string: string) {
+function titleCase(string: string): string {
     return string
         .split(' ')
-        .map((word) => `${word[0].toUpperCase()}${word.substr(1)}`)
+        .map(word => `${word[0].toUpperCase()}${word.substr(1)}`)
         .join(' ');
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
-function flattenDeep(arr) {
-    return arr.reduce((acc, val) => (Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val)), []);
+// TODO: Describe the nestedArray type better with Typescript.
+function flattenDeep<T>(nestedArray: Array<T>): T[] {
+    return nestedArray.reduce((acc, val) => {
+        return Array.isArray(val) ? [...acc, ...flattenDeep<T>(val)] : [...acc, val];
+    }, []);
 }
 
-export { flattenDeep, printHoursPretty, storageAvailable, titleCase };
+export { checkStorageAvailability, flattenDeep, printHoursPretty, titleCase };
