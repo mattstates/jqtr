@@ -5,7 +5,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 module.exports = {
     entry: {
         polyfill: 'babel-polyfill',
-        app: './index.js'
+        app: './index.tsx'
     },
     plugins: [
         new CleanWebpackPlugin(['dist']),

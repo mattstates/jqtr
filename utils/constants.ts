@@ -7,10 +7,10 @@ const UNASSIGNED = 'Unassigned';
 const WARNING_SYMBOL = '⚠️';
 const WINDOW_STORAGE_KEY = 'localStorage';
 
-const VIEW_TYPES = Object.freeze({
-    ASSIGNEE: 'assignee',
-    INITIATIVE: 'initiative'
-});
+enum VIEW_TYPES {
+    ASSIGNEE = 'assignee',
+    INITIATIVE = 'initiative'
+};
 
 const COLUMN_TYPES = Object.freeze({
     INDEX: 'index',

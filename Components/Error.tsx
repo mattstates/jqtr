@@ -17,7 +17,12 @@ function PermissionIssue() {
     );
 }
 
-export default ({ message, permissions }) => {
+interface ERROR_PROPS {
+    message: string;
+    permissions?: boolean;
+}
+
+export default ({ message, permissions }: ERROR_PROPS) => {
     const errorMessage = `${ERROR_SYMBOL} ${message || 'Error: Something went wrong.'}`;
     const permissionsMessage = permissions ? <PermissionIssue /> : null;
     return (

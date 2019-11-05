@@ -1,9 +1,9 @@
 import './node_modules/react-table/react-table.css';
 import './styles/styles.scss';
-import App from './Components/App.jsx';
+import App from './Components/App';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import TimeInStatusProvider from './contexts/TimeInStatusProvider.jsx';
+import { TimeInStatusProvider } from './contexts/TimeInStatusContext';
 
 const domEntryPoint = document.getElementById('jqtrapp');
 

@@ -1,50 +1,79 @@
 import './TimeInStatus.scss';
-import HorizontalLoader from './../Loaders/HorizontalLoader.jsx';
+import HorizontalLoader from '../Loaders/HorizontalLoader';
 import React, { useContext, useEffect } from 'react';
-import TimeInStatusContext from '../../contexts/TimeInStatusContext.js';
+import { TimeInStatusContext } from '../../contexts/TimeInStatusContext';
 import dateFns from 'date-fns';
-import { getFetchOptions } from '../../utils/apiUtils.js';
-import { jiraApiUrlByIssue } from '../../utils/urls.ts';
+import { getFetchOptions } from '../../utils/apiUtils';
+import { jiraApiUrlByIssue } from '../../utils/urls';
 
-function TimeInStatus({ issueId, status }) {
+interface ITimeInStatusProps {
+    [key: string]: string;
+}
+
+function TimeInStatus({ issueId, status }: ITimeInStatusProps) {
     const timeInStatusContext = useContext(TimeInStatusContext);
 
     useEffect(() => {
-        if (timeInStatusContext[issueId]) {
+        if (timeInStatusContext.issueId) {
             return () => {};
         }
 
         const abortController = new window.AbortController();
         const signal = abortController.signal;
         fetchTimeInStatusData({ issueId, status, signal, fromDate: timeInStatusContext.loadedDate })
-            .then((timeData) => {
+            .then(timeData => {
                 timeInStatusContext.updateTimeInStatus(timeData);
             })
-            .catch((error) => console.log(error.message));
+            .catch(error => console.log(error.message));
 
         return () => {
             abortController.abort();
         };
-    }, [timeInStatusContext[issueId]]);
+    }, [timeInStatusContext.issueId]);
 
-    return timeInStatusContext[issueId] ? <span className="daysInStatus">{timeInStatusContext[issueId]}</span> : <HorizontalLoader />;
+    return timeInStatusContext.issueId ? (
+        <span className="daysInStatus">{timeInStatusContext.issueId}</span>
+    ) : (
+        <HorizontalLoader />
+    );
 }
 
 export default TimeInStatus;
 
-async function fetchTimeInStatusData({ status, issueId, signal, fromDate }) {
-    const timeData = {};
-    let timeInStatus;
+interface IFetchTimeInStatusParams {
+    status: string;
+    issueId: string;
+    signal: AbortSignal;
+    fromDate: Date;
+}
+
+async function fetchTimeInStatusData({
+    status,
+    issueId,
+    signal,
+    fromDate
+}: IFetchTimeInStatusParams) {
+    const timeData: {
+        [key: string]: number;
+    } = {};
+    let timeInStatus: string;
 
     try {
-        const response = await fetch(`${jiraApiUrlByIssue}${issueId}?&fields=id,status,created&expand=changelog`, getFetchOptions([['signal', signal]]));
+        const response = await fetch(
+            `${jiraApiUrlByIssue}${issueId}?&fields=id,status,created&expand=changelog`,
+            getFetchOptions([['signal', signal]])
+        );
         const json = await response.json();
         if (status && json.changelog && json.changelog.histories) {
-            const matchingStatus = json.changelog.histories.filter((log) => log.items.some((item) => item.toString && item.toString === status));
+            const matchingStatus = json.changelog.histories.filter((log: any) =>
+                log.items.some((item: any) => item.toString && item.toString === status)
+            );
             const statusCollectionLength = matchingStatus.length;
 
             // Assumes that the last status in the matching collection will be the most recent change to the status history.
-            const latestTimeChange = statusCollectionLength ? matchingStatus[statusCollectionLength - 1].created : json.fields.created;
+            const latestTimeChange = statusCollectionLength
+                ? matchingStatus[statusCollectionLength - 1].created
+                : json.fields.created;
             const currentDate = fromDate || new Date();
             const latestUpdate = new Date(latestTimeChange);
 
@@ -60,7 +89,7 @@ async function fetchTimeInStatusData({ status, issueId, signal, fromDate }) {
     return { issueId, timeInStatus };
 }
 
-function getTimeInStatus({ daysInStatus, hoursInStatus, minutesInStatus, secondsInStatus }) {
+function getTimeInStatus({ daysInStatus, hoursInStatus, minutesInStatus, secondsInStatus }: {[key: string]: number}) {
     if (daysInStatus > 0) {
         return daysInStatus + 'd';
     }

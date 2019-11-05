@@ -1,9 +1,18 @@
 import './SearchBar.scss';
-import React, { useState, useEffect, useContext } from 'react';
-import TimeInStatusContext from '../contexts/TimeInStatusContext.js';
+import React, { useContext, useEffect, useState } from 'react';
+import { TimeInStatusContext } from '../contexts/TimeInStatusContext';
 import { isLocalStorageAvailable } from '../init';
 
-export default function SearchBar({ initialSearchString, submitCallback, abortController }) {
+interface SEARCHBAR_PROPS {
+    initialSearchString: string;
+    submitCallback: (searchString: string, abortController: AbortController) => void;
+    abortController: AbortController;
+}
+export default function SearchBar({
+    initialSearchString,
+    submitCallback,
+    abortController
+}: SEARCHBAR_PROPS) {
     const [searchString, updateSearchString] = useState(initialSearchString);
     // TODO: Consider removing the timeInStatusContext reset to a different component. Having the
     // App component handle the context was causing tons of re-renders of the whole app due to context

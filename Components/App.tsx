@@ -1,44 +1,58 @@
-import Error from './Error.jsx';
-import Loader from './Loaders/Loader.jsx';
+import Error from './Error';
+import Loader from './Loaders/Loader';
 import React, { useEffect, useMemo, useReducer } from 'react';
-import SearchBar from './SearchBar.jsx';
-import Table from './Table/Table.jsx';
-import { jiraApiUrl, jiraApplicationUrl } from '../utils/urls.ts';
-import { mapToUsefulData, gatherAllTasks, getFetchOptions } from '../utils/apiUtils.js';
+import SearchBar from './SearchBar';
+import Table from './Table/Table';
+import { jiraApiUrl, jiraApplicationUrl } from '../utils/urls';
+import { mapToUsefulData, gatherAllTasks, getFetchOptions } from '../utils/apiUtils';
 import { isLocalStorageAvailable } from '../init';
 
-function EmptyNotification() {
-    return { message: '', items: [] };
+interface Notification {
+    message: string;
+    items: any[];
 }
 
-const initialAppState = {
+interface Action {
+    type: ACTIONS;
+    payload?: any;
+}
+
+interface ApplicationState {
+    isLoading: boolean;
+    hasError: boolean;
+    data?: any;
+    hasHad401: boolean;
+    notification: Notification;
+    action?: Action;
+    jiraTasksAbortController: AbortController;
+}
+
+const initialAppState: ApplicationState = {
     isLoading: true,
     hasError: false,
     data: undefined,
     hasHad401: false,
-    notification: new EmptyNotification(),
-    action: {
-        type: undefined
-    },
+    notification: { message: '', items: [] },
+    action: null,
     jiraTasksAbortController: new AbortController()
 };
 
-const ACTIONS = {
-    FETCH_START: 'FETCH_START',
-    FETCH_SUCCESS: 'FETCH_SUCCESS',
-    FETCH_FAIL: 'FETCH_FAIL',
-    FETCH_401: 'FETCH_401',
-    FETCH_DETACH: 'FETCH_DETACH'
-};
+enum ACTIONS {
+    FETCH_START = 'FETCH_START',
+    FETCH_SUCCESS = 'FETCH_SUCCESS',
+    FETCH_FAIL = 'FETCH_FAIL',
+    FETCH_401 = 'FETCH_401',
+    FETCH_DETACH = 'FETCH_DETACH'
+}
 
-function jiraFetchReducer(state, action) {
+function jiraFetchReducer(state: ApplicationState, action: Action) {
     switch (action.type) {
         case ACTIONS.FETCH_START:
             return {
                 ...state,
                 isLoading: true,
                 hasError: false,
-                notification: new EmptyNotification()
+                notification: { message: '', items: [] }
             };
         case ACTIONS.FETCH_SUCCESS:
             return {
@@ -66,8 +80,6 @@ function jiraFetchReducer(state, action) {
                 ...state,
                 jiraTasksAbortController: new AbortController()
             };
-        default:
-            return new Error();
     }
 }
 
@@ -87,34 +99,45 @@ function getInitialQuery() {
     return '';
 }
 
-export default function App({ appWidth }) {
+interface APP_PROPS {
+    appWidth: number;
+}
+
+export default function App({ appWidth }: APP_PROPS): JSX.Element {
     const initialSearchString = useMemo(getInitialQuery, []);
 
     const [appState, dispatch] = useReducer(jiraFetchReducer, initialAppState);
 
-    function fetchJiraTasks(searchQuery, abortController) {
+    function fetchJiraTasks(searchQuery: string, abortController: AbortController) {
         dispatch({ type: ACTIONS.FETCH_START });
 
         const signal = abortController.signal;
         const encodedSearchQuery = window.encodeURIComponent(searchQuery);
 
-        fetch(`${jiraApiUrl}jql=${window.encodeURIComponent(encodedSearchQuery)}&maxResults=1000&fields=-description`, getFetchOptions([['signal', signal]]))
-            .then((response) => {
+        fetch(
+            `${jiraApiUrl}jql=${window.encodeURIComponent(
+                encodedSearchQuery
+            )}&maxResults=1000&fields=-description`,
+            getFetchOptions([['signal', signal]])
+        )
+            .then(response => {
                 if (response.ok) {
                     return response.json();
                 }
                 throw response;
             })
-            .then((jiraData) => {
+            .then(jiraData => {
                 window.location.hash = `jql=${encodedSearchQuery}`;
                 return gatherAllTasks(jiraData.issues.map(mapToUsefulData));
             })
-            .then((formattedIssues) => {
+            .then(formattedIssues => {
                 dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: formattedIssues });
             })
-            .catch((err) => {
+            .catch(err => {
                 console.error(err);
-                const requestMessage = err.ok ? 'There was a problem getting a response.' : `${err.status} ${err.statusText}.`;
+                const requestMessage = err.ok
+                    ? 'There was a problem getting a response.'
+                    : `${err.status} ${err.statusText}.`;
                 dispatch({ type: ACTIONS.FETCH_FAIL, payload: requestMessage });
 
                 if (err.status === 401) {
@@ -138,14 +161,28 @@ export default function App({ appWidth }) {
 
     // show errors, otherwise loading/table
     if (appState.hasError) {
-        renderComponent = <Error message={appState.notification.message} permissions={appState.hasHad401} />;
+        renderComponent = (
+            <Error message={appState.notification.message} permissions={appState.hasHad401} />
+        );
     } else {
-        renderComponent = appState.isLoading ? <Loader /> : <Table issues={appState.data} appWidth={appWidth} jiraApplicationUrl={jiraApplicationUrl} />;
+        renderComponent = appState.isLoading ? (
+            <Loader />
+        ) : (
+            <Table
+                issues={appState.data}
+                appWidth={appWidth}
+                jiraApplicationUrl={jiraApplicationUrl}
+            />
+        );
     }
 
     return (
         <React.Fragment>
-            <SearchBar abortController={appState.jiraTasksAbortController} initialSearchString={initialSearchString} submitCallback={fetchJiraTasks} />
+            <SearchBar
+                abortController={appState.jiraTasksAbortController}
+                initialSearchString={initialSearchString}
+                submitCallback={fetchJiraTasks}
+            />
             {renderComponent}
         </React.Fragment>
     );
