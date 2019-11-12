@@ -1,7 +1,6 @@
 const HOUR_IN_SECONDS = 3600;
 
 function printHoursPretty(seconds: number): string {
-
     const hours = Math.floor(seconds / HOUR_IN_SECONDS);
     const hoursOutput = hours > 0 ? `${hours}h` : '';
 
@@ -11,16 +10,16 @@ function printHoursPretty(seconds: number): string {
     return `${hoursOutput}${Boolean(hoursOutput && minutesOutput) ? ' ' : ''}${minutesOutput}` || '0h';
 }
 
-const checkStorageAvailability = (storageType: string): boolean => {
+const checkStorageAvailability = (browserStorageType: string): boolean => {
     try {
-        const storage = (window as { [key: string]: any })[storageType] as Storage;
-        const tempVar = '__storage_test__';
-        storage.setItem(tempVar, tempVar);
-        storage.removeItem(tempVar);
+        const storage = (window as { [key: string]: any })[browserStorageType] as Storage;
+        const temp = '__storage_test__';
+        storage.setItem(temp, temp);
+        storage.removeItem(temp);
         return true;
     } catch (e) {
-        const message = e?.message;
-        console.error(`${storageType} Storage is Not Available`, message);
+        const message = (e?.message as string) || 'No error message available';
+        console.error(`${browserStorageType} Storage is Not Available`, message);
         return false;
     }
 };

@@ -1,7 +1,7 @@
 {
-    "parser": "babel-eslint",
+    // "parser": "babel-eslint",
     "plugins": ["jest", "react", "react-hooks"],
-    "extends": ["eslint:recommended", "plugin:react/recommended"],
+    "extends": ["prettier", "eslint:recommended", "plugin:react/recommended"],
     "rules": {
         "no-alert": 2,
         "react-hooks/rules-of-hooks": "error",
@@ -191,7 +191,8 @@
         "max-statements": [1, 60],
         "new-cap": 1,
         "new-parens": 1,
-        "newline-after-var": 0,
+        "newline-after-var": [1, "always"],
+        "lines-between-class-members": [1, "always"],
         "object-curly-spacing": [1, "always"],
         "object-shorthand": 0,
         "one-var": [
