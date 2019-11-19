@@ -1,9 +1,14 @@
-import { JiraIssueParent, JiraIssueFixVersion, JiraIssueProgress, JiraFieldIssueType } from './JiraTypes';
+import {
+    JiraIssueParent,
+    JiraIssueFixVersion,
+    JiraIssueProgress,
+    JiraFieldIssueType
+} from './JiraTypes';
 
 export type MappedJiraIssue = {
     assignedQA: MappedIdentity[];
     assignee: MappedIdentity;
-    components: { name: string; id: string; }[];
+    components: { name: string; id: string }[];
     creator: MappedIdentity;
     epicTaskNumber: number;
     failedCodeReviewCount: number;
@@ -46,7 +51,7 @@ export type MappedJiraIssue = {
 export type MappedJiraSubtask = {
     assignedQA?: MappedIdentity[];
     assignee?: MappedIdentity;
-    components?: { name: string; id: string; }[];
+    components?: { name: string; id: string }[];
     creator?: MappedIdentity;
     epicTaskNumber?: number;
     failedCodeReviewCount?: number;
@@ -81,10 +86,16 @@ export type MappedJiraSubtask = {
         needsEstimate?: boolean;
         progress?: JiraIssueProgress;
     };
-}
+};
 
 export type MappedIdentity = {
     name: string;
     avatarUrls: string;
     emailAddress: string;
 };
+
+export interface ToolTipTimeData {
+    assignee: string;
+    timeRemaining: number;
+    needsEstimate: boolean;
+}

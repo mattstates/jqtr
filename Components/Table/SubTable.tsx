@@ -1,80 +1,116 @@
 import './SubTable.scss';
 import React from 'react';
-import ReactTable from 'react-table';
+import ReactTable, { Accessor, TableCellRenderer, Column } from 'react-table';
 import Status from './Status';
 import Time from './Time';
 import { COLUMN_TYPES, VIEW_TYPES } from '../../utils/constants';
-import { getTooltipTimeData } from './tableUtils.js';
+import { getTooltipTimeData } from './tableUtils';
+import { MappedJiraIssue } from '../../types/JQTRTypes';
 
-export default ({ viewType, jiraApplicationUrl, columnWidths, resourceList, data }) => {
-    const columns = [
-        {
-            // PLACEHOLDER - KEEPS COLUMNS ALIGNED.
-            accessor: 'null',
-            id: 'null',
-            sortable: false,
-            width: columnWidths[COLUMN_TYPES.INDEX]
-        },
+interface ISubTableProps {
+    columnWidths: { [key: string]: number };
+    data: MappedJiraIssue[];
+    jiraApplicationUrl: string;
+    resourceList: any[];
+    viewType: VIEW_TYPES;
+}
 
-        {
-            // INITIATIVE
-            accessor: ({ taskNumber, taskTitle }) => (
-                <React.Fragment>
-                    <span className="initiative">
-                        <span>
-                            {taskNumber}
-                            {': '}
+const SubTable = ({
+    viewType,
+    jiraApplicationUrl,
+    columnWidths,
+    resourceList,
+    data
+}: ISubTableProps) => {
+    const columns: Array<Column<MappedJiraIssue>> =
+        // {
+        //     accessor: Accessor;
+        //     id?: string;
+        //     sortable?: boolean;
+        //     width?: number | string;
+        //     minWidth?: number | string;
+        //     maxWidth?: number | string;
+        //     style?: object;
+        //     Cell?: TableCellRenderer;
+        // }[]
+        [
+            {
+                // PLACEHOLDER - KEEPS COLUMNS ALIGNED.
+                accessor: 'null',
+                id: 'null',
+                sortable: false,
+                width: columnWidths[COLUMN_TYPES.INDEX]
+            },
+
+            {
+                // INITIATIVE
+                accessor: ({
+                    taskNumber,
+                    taskTitle
+                }: {
+                    taskNumber: string;
+                    taskTitle: string;
+                }) => (
+                    <React.Fragment>
+                        <span className="initiative">
+                            <span>
+                                {taskNumber}
+                                {': '}
+                            </span>
+                            <a href={`${jiraApplicationUrl}${taskNumber}`}>{taskTitle}</a>
                         </span>
-                        <a href={`${jiraApplicationUrl}${taskNumber}`}>{taskTitle}</a>
-                    </span>
-                </React.Fragment>
-            ),
-            id: 'taskTitle',
-            minWidth: columnWidths[COLUMN_TYPES.VIEWTYPE],
-            style: { minHeight: 45 }
-        },
+                    </React.Fragment>
+                ),
+                id: 'taskTitle',
+                minWidth: columnWidths[COLUMN_TYPES.VIEWTYPE],
+                style: { minHeight: 45 }
+            },
 
-        {
-            // STATUS
-            Cell: ({ original }) => <Status info={original} />,
-            accessor: 'status',
-            maxWidth: columnWidths[COLUMN_TYPES.STATUS],
-            style: { cursor: 'default' }
-        },
+            {
+                // STATUS
+                Cell: ({ original }: any) => <Status info={original} />,
+                accessor: 'status',
+                maxWidth: columnWidths[COLUMN_TYPES.STATUS],
+                style: { cursor: 'default' }
+            },
 
-        {
-            // TOTAL TIME PLACEHOLDER - KEEPS COLUMNS ALIGNED.
-            accessor: 'null',
-            id: 'null',
-            minWidth: columnWidths[COLUMN_TYPES.TOTALTIME],
-            sortable: false
-        },
+            {
+                // TOTAL TIME PLACEHOLDER - KEEPS COLUMNS ALIGNED.
+                accessor: 'null',
+                id: 'null',
+                minWidth: columnWidths[COLUMN_TYPES.TOTALTIME],
+                sortable: false
+            },
 
-        ...resourceList.map((resource) => {
-            return {
-                accessor: ({ resourceQueue, timeProps }) => {
-                    if (resourceQueue === resource[0] && !timeProps.needsEstimate) {
-                        return timeProps.timeEstimate;
-                    } else if (resourceQueue === resource[0] && timeProps.needsEstimate) {
-                        return null;
-                    }
-                    return undefined;
-                },
-                Cell: ({ value, original }) => {
-                    return value === undefined ? null : (
-                        <Time
-                            time={value}
-                            id={original.id}
-                            tooltipData={viewType === VIEW_TYPES.INITIATIVE ? getTooltipTimeData([original], resource[0]) : null}
-                            progressInfo={original.timeProps.progress}
-                        />
-                    );
-                },
-                id: resource[0],
-                maxWidth: columnWidths[COLUMN_TYPES.RESOURCEGROUP]
-            };
-        })
-    ];
+            ...resourceList.map(resource => {
+                return {
+                    accessor: ({ resourceQueue, timeProps }: any) => {
+                        if (resourceQueue === resource[0] && !timeProps.needsEstimate) {
+                            return timeProps.timeEstimate;
+                        } else if (resourceQueue === resource[0] && timeProps.needsEstimate) {
+                            return null;
+                        }
+                        return undefined;
+                    },
+                    Cell: ({ value, original }: any) => {
+                        return value === undefined ? null : (
+                            <Time
+                                time={value}
+                                id={original.id}
+                                tooltipData={
+                                    viewType === VIEW_TYPES.INITIATIVE
+                                        ? getTooltipTimeData([original], resource[0])
+                                        : null
+                                }
+                                progressInfo={original.timeProps.progress}
+                            />
+                        );
+                    },
+                    id: resource[0],
+                    maxWidth: columnWidths[COLUMN_TYPES.RESOURCEGROUP]
+                };
+            })
+        ];
 
     return data.length ? (
         <ReactTable
@@ -88,3 +124,5 @@ export default ({ viewType, jiraApplicationUrl, columnWidths, resourceList, data
         />
     ) : null;
 };
+
+export default SubTable;

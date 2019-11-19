@@ -1,6 +1,5 @@
-node_modules/
-.vscode
-.DS_Store
-/.cache
 _appconfig.json
-/node_modules
+.cache/
+.DS_Store
+.vscode/
+node_modules/

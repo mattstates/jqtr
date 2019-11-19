@@ -1,6 +1,6 @@
 const ALERT_SYMBOL = '❗';
 const ERROR_SYMBOL = '😔';
-const FLAG_SYMBOL = '🚩'
+const FLAG_SYMBOL = '🚩';
 const KEYTASK_SYMBOL = '🔑';
 const NONE = 'None';
 const UNASSIGNED = 'Unassigned';
@@ -10,7 +10,7 @@ const WINDOW_STORAGE_KEY = 'localStorage';
 enum VIEW_TYPES {
     ASSIGNEE = 'assignee',
     INITIATIVE = 'initiative'
-};
+}
 
 const COLUMN_TYPES = Object.freeze({
     INDEX: 'index',

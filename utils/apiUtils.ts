@@ -1,4 +1,4 @@
-import { jiraApiUrlByIssue } from '../utils/urls';
+import { jiraApiUrlByIssue } from './urls';
 import { JiraIdentity, JiraIssue, JiraIssueParent } from '../types/JiraTypes';
 import { MappedIdentity, MappedJiraIssue, MappedJiraSubtask } from '../types/JQTRTypes';
 

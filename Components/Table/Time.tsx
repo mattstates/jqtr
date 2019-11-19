@@ -4,17 +4,20 @@ import ReactTooltip from 'react-tooltip';
 import { WARNING_SYMBOL } from '../../utils/constants';
 import { printHoursPretty } from '../../utils/utils';
 import { JSXElement } from 'babel-types';
+import { JiraIdentity } from '../../types/JiraTypes';
 
 function formatTooltip(tooltipData, id = ''): JSXElement[] {
     if (!tooltipData || !tooltipData.length) {
         return null;
     }
 
-    const includeTime = tooltipData.length !== 1
+    const includeTime = tooltipData.length !== 1;
 
     // Will show dupe entries for an assignee if they show up multiple times in subtasks. Maybe they should be aggregated?
     return tooltipData.map((person, i: number) => {
-        return <div key={person.assignee + i + id}>{concatenateTimeValues(person, includeTime)}</div>;
+        return (
+            <div key={person.assignee + i + id}>{concatenateTimeValues(person, includeTime)}</div>
+        );
     });
 }
 
@@ -24,10 +27,15 @@ function concatenateTimeValues(tooltipPerson, includeTime = false) {
 }
 
 interface ITimeProps {
-    { tooltipData, time, warning, id, footerWarning, progressInfo }
+    tooltipData: ToolTipTimeData;
+    time;
+    warning;
+    id;
+    footerWarning;
+    progressInfo;
 }
 
-const Time = ({ tooltipData, time, warning, id, footerWarning, progressInfo }) => {
+const Time = ({ tooltipData, time, warning, id, footerWarning, progressInfo }: ITimeProps) => {
     let timeOutput = null;
 
     if (typeof time === 'number') {
@@ -47,11 +55,25 @@ const Time = ({ tooltipData, time, warning, id, footerWarning, progressInfo }) =
 
     return (
         <React.Fragment>
-            <div data-for={id} {...(tooltipData ? { 'data-tip': '' } : null)} className={'time' + (footerWarning ? ' footerWarning' : '')}>
+            <div
+                data-for={id}
+                {...(tooltipData ? { 'data-tip': '' } : null)}
+                className={'time' + (footerWarning ? ' footerWarning' : '')}
+            >
                 {timeOutput}
-                {progressInfo && typeof progressInfo.percent === 'number' && <ProgressBar percent={progressInfo.percent} />}
+                {progressInfo && typeof progressInfo.percent === 'number' && (
+                    <ProgressBar percent={progressInfo.percent} />
+                )}
             </div>
-            {tooltipData && <ReactTooltip place="top" type="dark" effect="solid" id={id} getContent={() => formatTooltip(tooltipData, id)} />}
+            {tooltipData && (
+                <ReactTooltip
+                    place="top"
+                    type="dark"
+                    effect="solid"
+                    id={id}
+                    getContent={() => formatTooltip(tooltipData, id)}
+                />
+            )}
         </React.Fragment>
     );
 };
